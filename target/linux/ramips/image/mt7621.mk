@@ -459,6 +459,55 @@ define Device/beeline_smartbox-turbo-plus
 endef
 TARGET_DEVICES += beeline_smartbox-turbo-plus
 
+define Device/beeline_sbtplusspi
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  DEVICE_MODEL := Beeline Smart Box Turbo+ SPI
+  DEVICE_VENDOR := Beeline
+  IMAGE_SIZE := 16064k
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-usb3 \
+	kmod-usb-ledtrig-usbport kmod-mt7615-firmware
+endef
+TARGET_DEVICES += beeline_sbtplusspi
+
+
+define Device/beeline_sbgiga
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  DEVICE_VENDOR := Beeline
+  DEVICE_MODEL := Beeline SB Giga Breed
+  UBINIZE_OPTS := -E 5
+  SERCOMM_HWID := CHJ
+  SERCOMM_HWVER := A001
+  SERCOMM_SWVER := 0x0052
+  SERCOMM_HWNAME := SBGIGA
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_SIZE := 4096k
+  IMAGE_SIZE := 40960k
+  IMAGES += kernel.bin rootfs.bin factory.bin
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  IMAGE/factory.bin := pad-extra 2048k | append-kernel | pad-to 6144k | \
+	append-ubi | pad-to $$$$(BLOCKSIZE) | sercom-footer | pad-to 128 | \
+	zip $$$$(SERCOMM_HWNAME).bin | sercom-seal
+  IMAGE/kernel.bin := append-kernel
+  IMAGE/rootfs.bin := append-ubi | check-size $$$$(IMAGE_SIZE)
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-usb3 \
+	kmod-usb-ledtrig-usbport kmod-mt7663-firmware-ap
+endef
+TARGET_DEVICES += beeline_sbgiga
+
+define Device/beeline_sbgigaspi
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  DEVICE_VENDOR := Beeline
+  IMAGE_SIZE := 16064k
+  DEVICE_MODEL := Beeline SB Giga SPI
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-usb3 \
+	kmod-usb-ledtrig-usbport kmod-mt7663-firmware-ap
+endef
+TARGET_DEVICES += beeline_sbgigaspi
+
 define Device/belkin_rt1800
   $(Device/nand)
   IMAGE_SIZE := 49152k
@@ -1172,7 +1221,7 @@ define Device/hilink_hlk-7621a-evb
   $(Device/dsa-migration)
   $(Device/uimage-lzma-loader)
   DEVICE_VENDOR := HiLink
-  DEVICE_MODEL := HLK-7621A evaluation board
+  DEVICE_MODEL := HLK-7621A
   DEVICE_PACKAGES += kmod-mt76x2 kmod-usb3 -uboot-envtools
   IMAGE_SIZE := 32448k
 endef

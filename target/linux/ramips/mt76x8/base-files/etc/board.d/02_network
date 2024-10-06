@@ -37,6 +37,7 @@ ramips_setup_interfaces()
 		;;
 	asus,rt-ac1200|\
 	asus,rt-ac1200-v2|\
+	antex,hlk-7628n|\
 	hilink,hlk-7628n|\
 	hilink,hlk-7688a|\
 	hiwifi,hc5861b|\

@@ -29,6 +29,13 @@ define Build/ravpower-wd009-factory
 endef
 
 
+define Device/antex_hlk-7628n
+  IMAGE_SIZE := 32448k
+  DEVICE_VENDOR := ANTEX
+  DEVICE_MODEL := AXR-5U
+endef
+TARGET_DEVICES += antex_hlk-7628n
+
 define Device/alfa-network_awusfree1
   IMAGE_SIZE := 7872k
   DEVICE_VENDOR := ALFA Network
