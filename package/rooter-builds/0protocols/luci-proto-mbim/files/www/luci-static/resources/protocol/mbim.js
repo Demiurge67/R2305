@@ -32,7 +32,7 @@ return network.registerProtocol('mbim', {
 	},
 
 	getOpkgPackage: function() {
-		return 'rmbim';
+		return 'umbim';
 	},
 
 	isFloating: function() {

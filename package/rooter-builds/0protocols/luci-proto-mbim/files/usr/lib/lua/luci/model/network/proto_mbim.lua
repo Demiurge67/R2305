@@ -25,7 +25,7 @@ function proto.get_interface(self)
 end
 
 function proto.opkg_package(self)
-	return "rmbim"
+	return "umbim"
 end
 
 function proto.is_installed(self)
