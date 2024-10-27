@@ -5,62 +5,156 @@
 	. ../netifd-proto.sh
 	init_proto "$@"
 }
-#DBG=-v
+# DBG=-v
+
+ROOTER=/usr/lib/rooter
+ROOTER_LINK="/tmp/links"
+
+log() {
+	modlog "MBIM Connect $CURRMODEM" "$@"
+}
+
+handle_ip() {
+    local value="$1"
+	if [ "$value" = "ipv6.google.com" ]; then
+		ipv6=1
+	fi
+}
+
+enb=$(uci -q get custom.connect.ipv6)
+if [ -z $enb ]; then
+	enb="1"
+fi
+
+ifname1="ifname"
+if [ -e /etc/newstyle ]; then
+	ifname1="device"
+fi
+
+get_connect() {
+	NAPN=$(uci -q get modem.modeminfo$CURRMODEM.apn)
+	NAPN2=$(uci -q get modem.modeminfo$CURRMODEM.apn2)
+	NUSER=$(uci -q get modem.modeminfo$CURRMODEM.user)
+	NPASS=$(uci -q get modem.modeminfo$CURRMODEM.passw)
+	NAUTH=$(uci -q get modem.modeminfo$CURRMODEM.auth)
+	PINC=$(uci -q get modem.modeminfo$CURRMODEM.pincode)
+	PDPT=$(uci -q get modem.modeminfo$CURRMODEM.pdptype)
+	isplist=$(uci -q get modem.modeminfo$CURRMODEM.isplist)
+
+	apn=$NAPN
+	apn2=$NAPN2
+	username="$NUSER"
+	password="$NPASS"
+	auth=$NAUTH
+	pincode=$PINC
+
+	if [ "$pipv4" = "1" -a "$creg" = "5" ]; then
+		ipt="ipv4:"
+	else
+		if [ "$PDPT" = 0 ]; then
+			ipt=""
+		else
+			IPVAR=$(uci -q get modem.modem$CURRMODEM.pdptype)
+			case "$IPVAR" in
+				"IP" )
+					ipt="ipv4:"
+				;;
+				"IPV6" )
+					ipt="ipv6:"
+				;;
+				"IPV4V6" )
+					ipt="ipv4v6:"
+				;;
+			esac
+		fi
+	fi
+}
+
+get_sub() {
+	log "Checking subscriber"
+	tid=$((tid + 1))
+	SUB=$(umbim $DBG -n -t $tid -d $device subscriber)
+	retq=$?
+	if [ $retq -ne 0 ]; then
+		log "Subscriber init failed"
+		proto_notify_error "$interface" NO_SUBSCRIBER
+		return 1
+	fi
+	CNUM=$(echo "$SUB" | awk '/number:/ {print $2}')
+	IMSI=$(echo "$SUB" | awk '/subscriberid:/ {print $2}')
+	uci set modem.modem$CURRMODEM.imsi=$IMSI
+	ICCID=$(echo "$SUB" | awk '/simiccid:/ {print $2}')
+	uci set modem.modem$CURRMODEM.iccid=$ICCID
+	uci commit modem
+}
 
 proto_mbim_init_config() {
 	available=1
 	no_device=1
 	proto_config_add_string "device:device"
 	proto_config_add_string apn
+	proto_config_add_string apn2
 	proto_config_add_string pincode
 	proto_config_add_string delay
-	proto_config_add_boolean allow_roaming
-	proto_config_add_boolean allow_partner
 	proto_config_add_string auth
 	proto_config_add_string username
 	proto_config_add_string password
-	[ -e /proc/sys/net/ipv6 ] && proto_config_add_string ipv6
-	proto_config_add_string dhcp
-	proto_config_add_string dhcpv6
-	proto_config_add_string pdptype
-	proto_config_add_int mtu
-	proto_config_add_defaults
-}
-
-_proto_mbim_get_field() {
-        local field="$1"
-        shift
-        local mbimconfig="$@"
-        echo "$mbimconfig" | while read -r line; do
-                variable=${line%%:*}
-                [ "$variable" = "$field" ] || continue;
-                value=${line##* }
-                echo -n "$value "
-        done
 }
 
 _proto_mbim_setup() {
 	local interface="$1"
 	local tid=2
-	local ret
+	local ret v6cap pdns v4dns v6dns
 
-	local device apn pincode delay auth username password allow_roaming allow_partner
-	local dhcp dhcpv6 pdptype ip4table ip6table mtu $PROTO_DEFAULT_OPTIONS
-	json_get_vars device apn pincode delay auth username password allow_roaming allow_partner
-	json_get_vars dhcp dhcpv6 pdptype ip4table ip6table mtu $PROTO_DEFAULT_OPTIONS
+	if [ ! -f /tmp/bootend.file ]; then
+		return 0
+	fi
 
-	[ ! -e /proc/sys/net/ipv6 ] && ipv6=0 || json_get_var ipv6 ipv6
+	CURRMODEM=$(uci -q get network.$interface.currmodem)
+	uci set modem.modem$CURRMODEM.connected=0
+	uci commit modem
+	rm -f $ROOTER_LINK/reconnect$CURRMODEM
+	jkillall getsignal$CURRMODEM
+	rm -f $ROOTER_LINK/getsignal$CURRMODEM
+	jkillall con_monitor$CURRMODEM
+	rm -f $ROOTER_LINK/con_monitor$CURRMODEM
+	jkillall mbim_monitor$CURRMODEM
+	rm -f $ROOTER_LINK/mbim_monitor$CURRMODEM
+
+	local device apn pincode delay
+	json_get_vars device apn apn2 pincode delay auth username password
+
+	case $auth in
+		"0" )
+			auth=
+		;;
+		"1" )
+			auth="pap"
+		;;
+		"2" )
+			auth="chap"
+		;;
+		"*" )
+			auth=
+		;;
+	esac
+
+	IMEI="Unknown"
+	IMSI="Unknown"
+	ICCID="Unknown"
+	CNUM="*"
+	CNUMx="*"
 
 	[ -n "$ctl_device" ] && device=$ctl_device
 
 	[ -n "$device" ] || {
-		echo "mbim[$$]" "No control device specified"
+		log "No control device specified"
 		proto_notify_error "$interface" NO_DEVICE
 		proto_set_available "$interface" 0
 		return 1
 	}
 	[ -c "$device" ] || {
-		echo "mbim[$$]" "The specified control device does not exist"
+		log "The specified control device does not exist"
 		proto_notify_error "$interface" NO_DEVICE
 		proto_set_available "$interface" 0
 		return 1
@@ -71,242 +165,496 @@ _proto_mbim_setup() {
 	ifname="$( ls "$devpath"/net )"
 
 	[ -n "$ifname" ] || {
-		echo "mbim[$$]" "Failed to find matching interface"
+		log "Failed to find matching interface"
 		proto_notify_error "$interface" NO_IFNAME
 		proto_set_available "$interface" 0
 		return 1
 	}
 
-	[ -n "$apn" ] || {
-		echo "mbim[$$]" "No APN specified"
-		proto_notify_error "$interface" NO_APN
-		return 1
-	}
-
 	[ -n "$delay" ] && sleep "$delay"
 
-	echo "mbim[$$]" "Reading capabilities"
-	umbim $DBG -n -d $device caps || {
-		echo "mbim[$$]" "Failed to read modem caps"
+	log "Query radio state"
+	umbim $DBG -n -d $device radio | grep "off"
+	STATUS=$?
+
+	[ "$STATUS" -ne 0 ] || {
+		sleep 1
+		log "Setting FCC Auth"
+		uqmi $DBG -s -m -d $device --fcc-auth
+		sleep 1
+	}
+
+	log "Reading capabilities"
+	tid=$((tid + 1))
+	DCAPS=$(umbim $DBG -n -t $tid -d $device caps)
+	retq=$?
+	if [ $retq -ne 0 ]; then
+
+		log "Failed to read modem caps"
 		tid=$((tid + 1))
 		umbim $DBG -t $tid -d "$device" disconnect
 		proto_notify_error "$interface" PIN_FAILED
-		return 1
-	}
-	tid=$((tid + 1))
-
-	[ "$pincode" ] && {
-		echo "mbim[$$]" "Sending pin"
-		umbim $DBG -n -t $tid -d $device unlock "$pincode" || {
-			echo "mbim[$$]" "Unable to verify PIN"
-			tid=$((tid + 1))
-			umbim $DBG -t $tid -d "$device" disconnect
-			proto_notify_error "$interface" PIN_FAILED
-			proto_block_restart "$interface"
-			return 1
-		}
-	}
-	tid=$((tid + 1))
-
-	echo "mbim[$$]" "Checking pin"
-	umbim $DBG -n -t $tid -d $device pinstate
-	[ $? -eq 2 ] && {
-		echo "mbim[$$]" "PIN required"
-		tid=$((tid + 1))
-		umbim $DBG -t $tid -d "$device" disconnect
-		proto_notify_error "$interface" PIN_FAILED
-		proto_block_restart "$interface"
-		return 1
-	}
-	tid=$((tid + 1))
-
-	echo "mbim[$$]" "Checking subscriber"
-	umbim $DBG -n -t $tid -d $device subscriber || {
-		echo "mbim[$$]" "Subscriber init failed"
-		tid=$((tid + 1))
-		umbim $DBG -t $tid -d "$device" disconnect
-		proto_notify_error "$interface" NO_SUBSCRIBER
-		return 1
-	}
-	tid=$((tid + 1))
-
-	echo "mbim[$$]" "Register with network"
-	connected=0
-	umbim $DBG -n -t $tid -d $device registration
-	reg_status=$?
-	case $reg_status in
-		0)	echo "mbim[$$]" "Registered in home mode"
-			tid=$((tid + 1))
-			connected=1;;
-		4)	if [ "$allow_roaming" = "1" ]; then
-				echo "mbim[$$]" "Registered in roaming mode"
-				tid=$((tid + 1))
-				connected=1
-			fi;;
-		5) 	if [ "$allow_partner" = "1" ]; then
-				echo "mbim[$$]" "Registered in partner mode"
-				tid=$((tid + 1))
-				connected=1
-			fi;;
-	esac
-	if [ $connected -ne 1 ]; then
-		echo "mbim[$$]" "Subscriber registration failed (code $reg_status)"
-		tid=$((tid + 1))
-		umbim $DBG -t $tid -d "$device" disconnect
-		proto_notify_error "$interface" NO_REGISTRATION
 		return 1
 	fi
+	CUSTOM=$(echo "$DCAPS" | awk '/customdataclass:/ {print $2}')
+	IMEI=$(echo "$DCAPS" | awk '/deviceid:/ {print $2}')
+	uci set modem.modem$CURRMODEM.imei=$IMEI
+	echo 'CUSTOM="'"$CUSTOM"'"' > /tmp/mbimcustom$CURRMODEM
 
-	echo "mbim[$$]" "Attach to network"
-	umbim $DBG -n -t $tid -d $device attach || {
-		echo "mbim[$$]" "Failed to attach to network"
+	get_sub
+
+	if [ ! -f /tmp/profile$CURRMODEM ]; then
+		$ROOTER/connect/get_profile.sh $CURRMODEM
+	fi
+
+	log "Register with network"
+	for i in $(seq 4); do
 		tid=$((tid + 1))
-		umbim $DBG -t $tid -d "$device" disconnect
+		REG=$(umbim $DBG -n -t $tid -d $device registration)
+		retq=$?
+		[ $retq -ne 2 ] && break
+		log "Registering"
+		sleep 2
+	done
+	if [ $retq != 0 ]; then
+		if [ $retq != 4 ]; then
+			log "Subscriber registration failed"
+			proto_notify_error "$interface" NO_REGISTRATION
+			if [ -e /etc/config/wizard ]; then
+				wiz=$(uci -q get wizard.basic.wizard)
+				if [ "$wiz" = "1" ]; then
+					PID=$(ps |grep "chkconn.sh" | grep -v grep |head -n 1 | awk '{print $1}')
+					kill -9 $PID
+					ifdown wan1
+				else
+					/usr/lib/rooter/luci/restart.sh $CURRMODEM 11 1
+				fi
+			else
+				/usr/lib/rooter/luci/restart.sh $CURRMODEM 11 1
+			fi
+			return 1
+		fi
+	fi
+	log "Registered"
+	
+	COMMPORT=$(uci get modem.modem$CURRMODEM.commport)
+	ATCMDD="at+creg?"
+	OX=$($ROOTER/gcom/gcom-locked "/dev/ttyUSB$COMMPORT" "run-at.gcom" "$CURRMODEM" "$ATCMDD")
+	REGV=$(echo "$OX" | grep -o "+CREG: [0-2],[0-5]")
+	creg=$(echo "$REGV" | cut -d, -f2)
+	pipv4=$(uci -q get profile.roaming.ipv4)
+	get_connect
+	
+	MCCMNC=$(echo "$REG" | awk '/provider_id:/ {print $2}')
+	PROV=$(echo "$REG" | awk '/provider_name:/ {print $2}')
+	MCC=${MCCMNC:0:3}
+	MNC=${MCCMNC:3}
+
+	tid=$((tid + 1))
+
+	log "Attach to network"
+	ATTACH=$(umbim $DBG -n -t $tid -d $device attach)
+	retq=$?
+	if [ $retq != 0 ]; then
+		log "Failed to attach to network"
 		proto_notify_error "$interface" ATTACH_FAILED
 		return 1
-	}
+	fi
+	UP=$(echo "$ATTACH" | awk '/uplinkspeed:/ {print $2}')
+	DOWN=$(echo "$ATTACH" | awk '/downlinkspeed:/ {print $2}')
+
 	tid=$((tid + 1))
 
-	pdptype=$(echo "$pdptype" | awk '{print tolower($0)}')
-	[ "$ipv6" = 0 ] && pdptype="ipv4"
+	for wcnt in 1 2 3
+	do
+		for isp in $isplist 
+		do
+			NAPN=$(echo $isp | cut -d, -f2)
+			NPASS=$(echo $isp | cut -d, -f4)
+			CID=$(echo $isp | cut -d, -f5)
+			NUSER=$(echo $isp | cut -d, -f6)
+			NAUTH=$(echo $isp | cut -d, -f7)
+			if [ "$pipv4" = "1" -a "$creg" = "5" ]; then
+				ipt="ipv4:"
+				IPVAR="IP"
+				log "Roaming"
+			else
+				log "Not Roaming"
+				IPVAR=$(echo $isp | cut -d, -f8)
+				case "$IPVAR" in
+					"IP" )
+						ipt="ipv4:"
+					;;
+					"IPV6" )
+						ipt="ipv6:"
+					;;
+					"IPV4V6" )
+						ipt="ipv4v6:"
+					;;
+				esac
+			fi
+			IDV=$(uci get modem.modem$CURRMODEM.idV)
+			if [ "$IDV" = "12d1" ]; then
+				CFUNOFF="0"
+			else
+				CFUNOFF="4"
+			fi
+			IPUP=$(echo $IPVAR | tr 'a-z' 'A-Z')
+			ATCMDD="AT+CGDCONT=$CID,\"$IPUP\",\"$NAPN\""
+			OX=$($ROOTER/gcom/gcom-locked "/dev/ttyUSB$COMMPORT" "run-at.gcom" "$CURRMODEM" "$ATCMDD")
+			OX=$($ROOTER/gcom/gcom-locked "/dev/ttyUSB$COMMPORT" "run-at.gcom" "$CURRMODEM" "AT+CFUN=$CFUNOFF")
+			OX=$($ROOTER/gcom/gcom-locked "/dev/ttyUSB$COMMPORT" "run-at.gcom" "$CURRMODEM" "AT+CFUN=1")
+			sleep 3
+			ATCMDD="AT+CGDCONT?"
+			OX=$($ROOTER/gcom/gcom-locked "/dev/ttyUSB$COMMPORT" "run-at.gcom" "$CURRMODEM" "$ATCMDD")
+			log "$OX"
+			if [ "$NPASS" = "nil" -o "$NPASS" = "" ]; then
+				NPASS="NIL"
+			fi
+			if [ "$NUSER" = "nil" -o "$NUSER" = "" ]; then
+				NUSER="NIL"
+			fi
+			if [ "$NAUTH" = "nil" ]; then
+				NAUTH="0"
+			fi
+			apn=$NAPN
+			username="$NUSER"
+			password="$NPASS"
+			auth=$NAUTH
+			case $auth in
+				"0" )
+					auth="none"
+				;;
+				"1" )
+					auth="pap"
+				;;
+				"2" )
+					auth="chap"
+				;;
+				"*" )
+					auth="none"
+				;;
+			esac
+			
+			if [ ! -e /etc/config/isp ]; then
+				log "Connect to network using $apn"
+			else
+				log "Connect to network"
+			fi
+			
+			if [ ! -e /etc/config/isp ]; then
+				log "$ipt $apn $auth $username $password"
+			fi
+			
+			tidd=0
+			tcnt=4
+			while ! umbim $DBG -n -t $tid -d $device connect "$ipt""$apn" "$auth" "$username" "$password"; do
+				tid=$((tid + 1))
+				sleep 1;
+				tidd=$((tidd + 1))
+				if [ $tidd -gt $tcnt ]; then
+					break;
+				fi
+			done
+			if [ $tidd -le $tcnt ]; then
+				break
+			fi
+		done
+		if [ $tidd -le $tcnt ]; then
+			break
+		fi
+	done
+	if [ $tidd -gt $tcnt ]; then
+		log "Failed to connect to network"
+		if [ -e /etc/config/wizard ]; then
+			wiz=$(uci -q get wizard.basic.wizard)
+			if [ "$wiz" = "1" ]; then
+				PID=$(ps |grep "chkconn.sh" | grep -v grep |head -n 1 | awk '{print $1}')
+				kill -9 $PID
+				ifdown wan1
+			else
+				/usr/lib/rooter/luci/restart.sh $CURRMODEM 11 1
+			fi
+		else
+			/usr/lib/rooter/luci/restart.sh $CURRMODEM 11 1
+		fi
+		return 1
+	fi
+	log "Save Connect Data"
+	uci set modem.modem$CURRMODEM.mdevice=$device
+	uci set modem.modem$CURRMODEM.mapn=$apn
+	uci set modem.modem$CURRMODEM.mipt=$itp
+	uci set modem.modem$CURRMODEM.mauth=$auth
+	uci set modem.modem$CURRMODEM.musername=$username
+	uci set modem.modem$CURRMODEM.mpassword=$password
+	uci commit modem
+	
+	tid=$((tid + 1))
 
-	local req_pdptype="" # Pass "default" PDP type to umbim if unconfigured
-	[ "$pdptype" = "ipv4" -o "$pdptype" = "ipv6" -o "$pdptype" = "ipv4v6" ] && req_pdptype="$pdptype:"
-
-	local connect_state
-	echo "mbim[$$]" "Connect to network"
-	connect_state=$(umbim $DBG -n -t $tid -d $device connect "$req_pdptype$apn" "$auth" "$username" "$password") || {
-		echo "mbim[$$]" "Failed to connect bearer"
-		tid=$((tid + 1))
-		umbim $DBG -t $tid -d "$device" disconnect
-		proto_notify_error "$interface" CONNECT_FAILED
+	CONFIG=$(umbim $DBG -n -t $tid -d $device config) || {
+		log "config failed"
 		return 1
 	}
-	tid=$((tid + 1))
+	log "IP config $CONFIG"
 
-	echo "$connect_state"
-	local iptype="$(echo "$connect_state" | grep iptype: | awk '{print $4}')"
+	IP=$(echo -e "$CONFIG"|grep "ipv4address"|grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)")
+	GATE=$(echo -e "$CONFIG"|grep "ipv4gateway"|grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)")
+	DNS1=$(echo -e "$CONFIG"|grep "ipv4dnsserver"|grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" |sed -n 1p)
+	DNS2=$(echo -e "$CONFIG"|grep "ipv4dnsserver"|grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" |sed -n 2p)
+	if [ $enb = "1" ]; then
+		IP6=$(echo "$CONFIG" | awk '/ipv6address:/ {print $2}' | cut -d / -f 1)
+		DNS3=$(echo "$CONFIG" | awk '/ipv6dnsserver:/ {print $2}' | sed -n 1p)
+		DNS4=$(echo "$CONFIG" | awk '/ipv6dnsserver:/ {print $2}' | sed -n 2p)
+	fi
+	echo "$GATE" > /tmp/mbimgateway
 
-	echo "mbim[$$]" "Connected"
+	[ -n "$IP" ] && echo "IP: $IP"
+	[ -n "$DNS1" ] && echo "DNS1: $DNS1"
+	[ -n "$DNS2" ] && echo "DNS2: $DNS2"
+	if [ $enb = "1" ]; then
+		[ -n "$IP6" ] && echo "IPv6: $IP6"
+		[ -n "$DNS3" ] && echo "DNS3: $DNS3"
+		[ -n "$DNS4" ] && echo "DNS4: $DNS4"
+	fi
 
-	local zone="$(fw3 -q network "$interface" 2>/dev/null)"
+	log "Connected, setting IP"
+	ipv6only="0"
+	if [ $enb = "1" ]; then
+		if [ -n "$IP6" -a -z "$IP" ]; then
+			log "Running IPv6-only mode"
+			nat46=1
+			ipv6only="1"
+		fi
 
-	echo "mbim[$$]" "Setting up $ifname"
-	local mbimconfig="$(umbim $DBG -n -t $tid -d $device config)"
-	echo "$mbimconfig"
-	tid=$((tid + 1))
+		if [[ $(echo "$IP6" | grep -o "^[23]") ]]; then
+			# Global unicast IP acquired
+			v6cap=1
+		elif
+			[[ $(echo "$IP6" | grep -o "^[0-9a-fA-F]\{1,4\}:") ]]; then
+			# non-routable address
+			v6cap=2
+		else
+			v6cap=0
+		fi
+	fi
+
+	INTER=$(uci get modem.modem$CURRMODEM.inter)
+	if [ -e /tmp/v4dns$INTER -o -e /tmp/v6dns$INTER ]; then
+		pdns=1
+		if [ -e /tmp/v4dns$INTER ]; then
+			v4dns=$(cat /tmp/v4dns$INTER 2>/dev/null)
+		fi
+		if [ $enb = "1" ]; then
+			if [ -e /tmp/v6dns$INTER ]; then
+				v6dns=$(cat /tmp/v6dns$INTER 2>/dev/null)
+			fi
+		fi
+	else
+		v4dns="$DNS1 $DNS2"
+		if [ $enb = "1" ]; then
+			v6dns="$DNS3 $DNS4"
+		fi
+	fi
 
 	proto_init_update "$ifname" 1
+
+	if [ -n "$IP" ]; then
+		proto_add_ipv4_address $IP "255.255.255.255"
+		proto_add_ipv4_route "0.0.0.0" 0
+	fi
+
+	for DNSV in $(echo "$v4dns"); do
+		proto_add_dns_server "$DNSV"
+	done
+
+	if [ $enb = "1" ]; then
+		if [ "$v6cap" -gt 0 ]; then
+			# RFC 7278: Extend an IPv6 /64 Prefix to LAN
+			proto_add_ipv6_address $IP6 128
+			if [ "$v6cap" = 1 ]; then
+				proto_add_ipv6_prefix $IP6/64
+				proto_add_ipv6_route "::0" 0 "" "" "" $IP6/64
+				for DNSV in $(echo "$v6dns"); do
+					proto_add_dns_server "$DNSV"
+				done
+			fi
+		fi
+	fi
+
+	proto_add_data
+		json_add_string zone wan
+	proto_close_data
+
 	proto_send_update "$interface"
 
-	[ -z "$dhcp" ] && dhcp="auto"
-	[ -z "$dhcpv6" ] && dhcpv6="auto"
-
-	[ "$iptype" != "ipv6" ] && {
-		json_init
-		json_add_string name "${interface}_4"
-		json_add_string ifname "@$interface"
-		ipv4address=$(_proto_mbim_get_field ipv4address "$mbimconfig")
-		if [ -n "$ipv4address" -a "$dhcp" != 1 ]; then
-			json_add_string proto "static"
-
-			json_add_array ipaddr
-			for address in $ipv4address; do
-				json_add_string "" "$address"
-			done
-			json_close_array
-
-			json_add_string gateway $(_proto_mbim_get_field ipv4gateway "$mbimconfig")
-		elif [ "$dhcp" != 0 ]; then
-			echo "mbim[$$]" "Starting DHCP on $ifname"
-			json_add_string proto "dhcp"
+	if [ $enb = "1" ]; then
+		if [ "$v6cap" -gt 0 ]; then
+			local zone="$(fw3 -q network "$interface" 2>/dev/null)"
 		fi
-
-		[ "$peerdns" = 0 -a "$dhcp" != 1 ] || {
-			json_add_array dns
-			for server in $(_proto_mbim_get_field ipv4dnsserver "$mbimconfig"); do
-				json_add_string "" "$server"
-			done
-			json_close_array
-		}
-
-		proto_add_dynamic_defaults
-		[ -n "$zone" ] && json_add_string zone "$zone"
-		[ -n "$ip4table" ] && json_add_string ip4table "$ip4table"
-		json_close_object
-		ubus call network add_dynamic "$(json_dump)"
-	}
-
-	[ "$iptype" != "ipv4" ] && {
-		json_init
-		json_add_string name "${interface}_6"
-		json_add_string ifname "@$interface"
-		ipv6address=$(_proto_mbim_get_field ipv6address "$mbimconfig")
-		if [ -n "$ipv6address" -a "$dhcpv6" != 1 ]; then
-			json_add_string proto "static"
-
-			json_add_array ip6addr
-			for address in $ipv6address; do
-				json_add_string "" "$address"
-			done
-			json_close_array
-
-			json_add_array ip6prefix
-			for address in $ipv6address; do
-				json_add_string "" "$address"
-			done
-			json_close_array
-
-			json_add_string ip6gw $(_proto_mbim_get_field ipv6gateway "$mbimconfig")
-
-		elif [ "$dhcpv6" != 0 ]; then
-			echo "mbim[$$]" "Starting DHCPv6 on $ifname"
+		if [ "$v6cap" = 2 ]; then
+			log "Adding IPv6 dynamic interface"
+			json_init
+			json_add_string name "${interface}_6"
+			json_add_string ${ifname1} "@$interface"
 			json_add_string proto "dhcpv6"
 			json_add_string extendprefix 1
-		fi
-
-		[ "$peerdns" = 0 -a "$dhcpv6" != 1 ] || {
+			[ -n "$zone" ] && json_add_string zone "$zone"
+			[ "$nat46" = 1 ] || json_add_string iface_464xlat 0
+			json_add_boolean peerdns 0
 			json_add_array dns
-			for server in $(_proto_mbim_get_field ipv6dnsserver "$mbimconfig"); do
-				json_add_string "" "$server"
-			done
+				for DNSV in $(echo "$v6dns"); do
+					json_add_string "" "$DNSV"
+				done
 			json_close_array
-		}
+			proto_add_dynamic_defaults
+			json_close_object
+			ubus call network add_dynamic "$(json_dump)"
+		elif
+			[ "$v6cap" = 1 -a "$nat46" = 1 ]; then
+			log "Adding 464XLAT (CLAT) dynamic interface"
+			json_init
+			json_add_string name "CLAT$INTER"
+			json_add_string proto "464xlat"
+			json_add_string tunlink "${interface}"
+			[ -n "$zone" ] && json_add_string zone "$zone"
+			proto_add_dynamic_defaults
+			json_close_object
+			ubus call network add_dynamic "$(json_dump)"
+		fi
+	fi
 
-		proto_add_dynamic_defaults
-		[ -n "$zone" ] && json_add_string zone "$zone"
-		[ -n "$ip6table" ] && json_add_string ip6table "$ip6table"
-		json_close_object
-		ubus call network add_dynamic "$(json_dump)"
-	}
-
-	[ -z "$mtu" ] && {
-		local ipv4mtu=$(_proto_mbim_get_field ipv4mtu "$mbimconfig")
-		ipv4mtu="${ipv4mtu:-0}"
-		local ipv6mtu=$(_proto_mbim_get_field ipv6mtu "$mbimconfig")
-		ipv6mtu="${ipv6mtu:-0}"
-
-		mtu=$((ipv6mtu > ipv4mtu ? ipv6mtu : ipv4mtu))
-	}
-	[ -n "$mtu" -a "$mtu" != 0 ] && {
-		echo Setting MTU of $ifname to $mtu
-		/sbin/ip link set dev $ifname mtu $mtu
-	}
-
+	tid=$((tid + 1))
 	uci_set_state network $interface tid "$tid"
+#	SIGNAL=$(umbim $DBG -n -t $tid -d $device signal)
+#	CSQ=$(echo "$SIGNAL" | awk '/rssi:/ {print $2}')
+
+	if [ -e $ROOTER/modem-led.sh ]; then
+		$ROOTER/modem-led.sh $CURRMODEM 3
+	fi
+
+	$ROOTER/log/logger "Modem #$CURRMODEM Connected"
+	log "Modem $CURRMODEM Connected"
+
+	IDP=$(uci get modem.modem$CURRMODEM.idP)
+	IDV=$(uci get modem.modem$CURRMODEM.idV)
+
+	if [ ! -s /tmp/msimdata$CURRMODEM ]; then
+		echo $IDV" : "$IDP > /tmp/msimdatax$CURRMODEM
+		echo "$IMEI" >> /tmp/msimdatax$CURRMODEM
+		echo "$IMSI" >> /tmp/msimdatax$CURRMODEM
+		echo "$ICCID" >> /tmp/msimdatax$CURRMODEM
+		echo "1" >> /tmp/msimdatax$CURRMODEM
+		mv -f /tmp/msimdatax$CURRMODEM /tmp/msimdata$CURRMODEM
+	fi
+
+	if [ ! -s /tmp/msimnum$CURRMODEM ]; then
+		echo "$CNUM" > /tmp/msimnumx$CURRMODEM
+		echo "$CNUMx" >> /tmp/msimnumx$CURRMODEM
+		mv -f /tmp/msimnumx$CURRMODEM /tmp/msimnum$CURRMODEM
+	fi
+
+	uci set modem.modem$CURRMODEM.custom=$CUSTOM
+	uci set modem.modem$CURRMODEM.provider=$PROV
+	uci set modem.modem$CURRMODEM.down=$DOWN" kbps Down | "
+	uci set modem.modem$CURRMODEM.up=$UP" kbps Up"
+	uci set modem.modem$CURRMODEM.mcc=$MCC
+	uci set modem.modem$CURRMODEM.mnc=" "$MNC
+	uci set modem.modem$CURRMODEM.sig="--"
+	uci set modem.modem$CURRMODEM.sms=0
+	uci commit modem
+
+	COMMPORT=$(uci get modem.modem$CURRMODEM.commport)
+	if [ -z $COMMPORT ]; then
+		ln -s $ROOTER/mbim/mbimdata.sh $ROOTER_LINK/getsignal$CURRMODEM
+	else
+		$ROOTER/sms/check_sms.sh $CURRMODEM &
+		ln -s $ROOTER/signal/modemsignal.sh $ROOTER_LINK/getsignal$CURRMODEM
+		# send custom AT startup command
+		ATCMDD=$(uci -q get modem.modeminfo$CURRMODEM.atc)
+		if [ ! -z "${ATCMDD}" ]; then
+			OX=$($ROOTER/gcom/gcom-locked "/dev/ttyUSB$COMMPORT" "run-at.gcom" "$CURRMODEM" "$ATCMDD")
+			OX=$($ROOTER/common/processat.sh "$OX")
+			ERROR="ERROR"
+			if `echo ${OX} | grep "${ERROR}" 1>/dev/null 2>&1`
+			then
+				log "Error sending custom AT command: $ATCMDD with result: $OX"
+			else
+				log "Sent custom AT command: $ATCMDD with result: $OX"
+			fi
+		fi
+	fi
+	ln -s $ROOTER/connect/reconnect.sh $ROOTER_LINK/reconnect$CURRMODEM
+	$ROOTER_LINK/getsignal$CURRMODEM $CURRMODEM $PROT &
+	ln -s $ROOTER/connect/conmon.sh $ROOTER_LINK/con_monitor$CURRMODEM
+	$ROOTER_LINK/con_monitor$CURRMODEM $CURRMODEM &
+	#ln -s $ROOTER/mbim/monitor.sh $ROOTER_LINK/mbim_monitor$CURRMODEM
+	#$ROOTER_LINK/mbim_monitor$CURRMODEM $CURRMODEM $device &
+
+	uci set modem.modem$CURRMODEM.connected=1
+	uci commit modem
+	
+	if [ -e $ROOTER/connect/postconnect.sh ]; then
+		$ROOTER/connect/postconnect.sh $CURRMODEM
+	fi
+	
+	if [ -e $ROOTER/timezone.sh ]; then
+		TZ=$(uci -q get modem.modeminfo$CURRMODEM.tzone)
+		if [ "$TZ" = "1" ]; then
+			$ROOTER/timezone.sh &
+		fi
+	fi
+	#CLB=$(uci -q get modem.modeminfo$CURRMODEM.lb)
+	CLB=1
+	if [ -e /etc/config/mwan3 ]; then
+		INTER=$(uci get modem.modeminfo$CURRMODEM.inter)
+		if [ -z $INTER ]; then
+			INTER=0
+		else
+			if [ $INTER = 0 ]; then
+				INTER=$CURRMODEM
+			fi
+		fi
+		uci set mwan3.wan$INTER.enabled=1
+		log "Check IPv6 Only"
+		if [ "$ipv6only" = "1" ]; then
+			uci set mwan3.wan$INTER.family='ipv6'
+			ipv6=0
+			config_load mwan3
+			config_list_foreach wan1 track_ip handle_ip
+			if [ "$ipv6" = 0 ]; then
+				uci add_list mwan3.wan$INTER.track_ip='ipv6.google.com'
+			fi
+			uci set mwan3.CLAT$INTER.enabled=0
+			log "IPv6"
+		else
+			uci set mwan3.wan$INTER.family='ipv4'
+			uci set mwan3.CLAT$INTER.enabled=0
+		fi
+		uci commit mwan3
+		/usr/sbin/mwan3 restart
+	fi
+	rm -f /tmp/usbwait
+
+	return 0
 }
 
 proto_mbim_setup() {
-	local ret
 
+	local ret
 	_proto_mbim_setup $@
 	ret=$?
 
 	[ "$ret" = 0 ] || {
-		logger "mbim bringup failed, retry in 15s"
-		sleep 15
+		log "MBIM bringup failed, retry in 5s"
+		CPORT=$(uci get modem.modem$CURRMODEM.commport)
+		ATCMDD="AT+COPS=0"
+		OX=$($ROOTER/gcom/gcom-locked "/dev/ttyUSB$CPORT" "run-at.gcom" "$CURRMODEM" "$ATCMDD")
+		#log "Restart Modem"
+		#/usr/lib/rooter/luci/restart.sh $CURRMODEM
+		sleep 5
 	}
 
+	exit 0
 	return $ret
 }
 
@@ -319,14 +667,20 @@ proto_mbim_teardown() {
 
 	[ -n "$ctl_device" ] && device=$ctl_device
 
-	echo "mbim[$$]" "Stopping network"
-	[ -n "$tid" ] && {
-		umbim $DBG -t $tid -d "$device" disconnect
-		uci_revert_state network $interface tid
-	}
+	if [ -n "$device" ]; then
+		log "Stopping network"
+		if [ -n "$tid" ]; then
+			tid=$((tid + 1))
+			umbim $DBG -t $tid -d "$device" disconnect
+			uci_revert_state network $interface tid
+		else
+			umbim $DBG -d "$device" disconnect
+		fi
+	fi
 
 	proto_init_update "*" 0
 	proto_send_update "$interface"
+
 }
 
 [ -n "$INCLUDE_ONLY" ] || add_protocol mbim

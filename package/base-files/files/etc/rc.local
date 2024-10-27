@@ -1,7 +1,49 @@
 # Put your custom commands here that should be executed once
 # the system init finished. By default this file does nothing.
 
+# new_id to mbim_qmi_wwan driver for T99W175  
+
 echo "05c6 90d5" > /sys/bus/usb-serial/drivers/option1/new_id
 echo "1e2d 00b3" > /sys/bus/usb/drivers/qmi_wwan/new_id
+
+# new_id to mbim_qmi_wwan driver for
+echo "0e8d 7126" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "0e8d 7126" > /sys/bus/usb/drivers/qmi_wwan/new_id
+
+# new_id to mbim_wwan driver for Telit 960 
+ 
+echo "1bc7 1910" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "1bc7 1911" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "413C 81D7" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "413C 81D7_b" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "1413C _legacy" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "413C 81D8" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "9025 05C6" > /sys/bus/usb-serial/drivers/option1/new_id
+
+# new_id to qmi_wwan driver for Telit 960
+echo "1bc7 1910" > /sys/bus/usb/drivers/qmi_wwan/new_id
+echo "1bc7 1911" > /sys/bus/usb/drivers/qmi_wwan/new_id
+echo "413C 81D7" > /sys/bus/usb/drivers/qmi_wwan/new_id
+echo "413C 81D7_b" > /sys/bus/usb/drivers/qmi_wwan/new_id
+echo "1413C _legacy" > /sys/bus/usb/drivers/qmi_wwan/new_id
+echo "413C 81D8" > /sys/bus/usb/drivers/qmi_wwan/new_id
+echo "9025 05C6" > /sys/bus/usb/drivers/qmi_wwan/new_id
+
+# unbind qmi_wwan  driver from 3 devices (com ports)
+echo "1-1:1.2" > /sys/bus/usb/drivers/qmi_wwan/unbind
+echo "1-1:1.3" > /sys/bus/usb/drivers/qmi_wwan/unbind
+echo "1-1:1.4" > /sys/bus/usb/drivers/qmi_wwan/unbind
+
+# ---------- ln960 usb 3.0 mode -------------------------
+# net qmi device = cdc-wdm0 
+# ttyUSB2 - port for AT comand
+echo "2-1:1.0" > /sys/bus/usb/drivers/option/unbind
+echo "2-1:1.0" > /sys/bus/usb/drivers/qmi_wwan/bind
+
+# ---------- ln960 usb 2.0 mode -------------------------
+# net qmi device = cdc-wdm0 
+# ttyUSB2 - port for AT comand
+echo "1-1:1.0" > /sys/bus/usb/drivers/option/unbind
+echo "1-1:1.0" > /sys/bus/usb/drivers/qmi_wwan/bind
 
 exit 0

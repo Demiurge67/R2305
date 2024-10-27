@@ -14,7 +14,7 @@ define Package/vpnpolicy
   SECTION:=utils
   CATEGORY:=ROOter
   SUBMENU:=Router Specific
-  DEPENDS:=+vpn-policy-routing +luci-app-vpn-policy-routing \
+  DEPENDS:+luci-app-vpn-policy-routing \
 	+ipset +resolveip +ip +kmod-ipt-ipset +iptables +dnsmasq-full
   TITLE:=Install scripts for VPN Policy
   PKGARCH:=all

@@ -16,7 +16,7 @@ define Package/ext-sercomm
   DEPENDS:=+ext-rooter-basic +luci +luci-app-ddns +ddns-scripts +webconsole \
 		+bwmon +464xlat +luci-app-rootervpn +ext-wireguard \
 		+ext-theme +luci-theme-argon +luci-theme-argondark +ext-login \
-		+ca-bundle +ca-certificates \
+		+ca-bundle +ca-certificates +luci-theme-materialgrey\
 		+luci-app-ksmbd +usb-storage \
 		+luci-app-sqm +kmod-sched-cake +luci-app-nft-qos \
 		+ext-command +ext-speedtest \
