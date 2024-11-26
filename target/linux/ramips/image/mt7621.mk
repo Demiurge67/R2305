@@ -2009,6 +2009,39 @@ define Device/netis_wf2881
 endef
 TARGET_DEVICES += netis_wf2881
 
+define Device/netis_n6-ax-nand
+  $(Device/dsa-migration)
+  $(Device/nand)
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 129280k
+  UIMAGE_NAME := MT7621-RFB-AX-NAND_0.0.00
+  KERNEL_INITRAMFS := $$(KERNEL) | netis-tail mt7621-rfb-ax-nand
+  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | check-size
+  DEVICE_VENDOR := NETIS
+  DEVICE_MODEL := N6 AX1800 (NAND)
+  DEVICE_PACKAGES := kmod-usb3 kmod-usb-ledtrig-usbport kmod-mt7915e kmod-mt7915-firmware \
+       -uboot-envtools
+endef
+TARGET_DEVICES += netis_n6-ax-nand
+
+define Device/netis_n6-ax-nor
+  $(Device/dsa-migration)
+  $(Device/nand)
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 15040k
+  UIMAGE_NAME := MT7621-RFB-NOR_0.0.00
+  KERNEL_INITRAMFS := $$(KERNEL) | netis-tail mt7621-rfb-nor
+  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | check-size
+  DEVICE_VENDOR := NETIS
+  DEVICE_MODEL :=  N6 AX1800 (SPI NOR)
+  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7915-firmware -uboot-envtools
+endef
+TARGET_DEVICES += netis_n6-ax-nor
+
 define Device/oraybox_x3a
   $(Device/dsa-migration)
   $(Device/uimage-lzma-loader)
