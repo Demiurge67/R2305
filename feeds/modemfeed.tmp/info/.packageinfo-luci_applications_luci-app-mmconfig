@@ -1,0 +1,64 @@
+Source-Makefile: feeds/modemfeed/luci/applications/luci-app-mmconfig/Makefile
+Build-Depends: lua/host luci-base/host LUCI_CSSTIDY:csstidy/host LUCI_SRCDIET:luasrcdiet/host 
+
+Package: luci-app-mmconfig
+Submenu: 3. Applications
+Version: 0.1.0
+Depends: +libc +luci-proto-modemmanager +luci-app-modeminfo
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: Configrure modem bands via mmcli utility
+Maintainer: OpenWrt LuCI community
+Source: 
+License: GPLv3
+Type: ipkg
+Description: Configrure modem bands via mmcli utility
+https://github.com/openwrt/luci
+OpenWrt LuCI community
+@@
+
+Package: luci-i18n-mmconfig-ru
+Default: LUCI_LANG_ru||(ALL&&m)
+Version: x
+Depends: +libc luci-app-mmconfig
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-mmconfig - ru translation
+Maintainer: 
+Source: 
+License: GPLv3
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-mmconfig - Русский (Russian)
+
+@@
+
+Package: luci-i18n-mmconfig-zh-cn
+Default: LUCI_LANG_zh_Hans||(ALL&&m)
+Version: x
+Depends: +libc luci-app-mmconfig
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-mmconfig - zh-cn translation
+Maintainer: 
+Source: 
+License: GPLv3
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-mmconfig - 简体中文 (Chinese Simplified)
+
+@@
+
+

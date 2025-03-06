@@ -1,0 +1,25 @@
+Source-Makefile: feeds/modemfeed/packages/telephony/atinout/Makefile
+
+Package: atinout
+Submenu: Telephony
+Version: 0.9.1
+Depends: +libc 
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: Send AT commands to a modem
+Maintainer: Adrian Guenter <a@gntr.me>
+Source: atinout-0.9.1.tar.gz
+License: GPLv2
+LicenseFiles: LICENSE
+Type: ipkg
+Description: 	Atinout is a program that will execute AT commands in sequence and
+	capture the response from the modem.
+http://atinout.sourceforge.net/
+Adrian Guenter <a@gntr.me>
+@@
+
+

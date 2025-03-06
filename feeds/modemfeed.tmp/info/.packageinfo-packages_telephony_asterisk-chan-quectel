@@ -1,0 +1,24 @@
+Source-Makefile: feeds/modemfeed/packages/telephony/asterisk-chan-quectel/Makefile
+
+Package: asterisk-chan-quectel
+Submenu: Telephony
+Version: 2.1-20220526-1
+Depends: +libc asterisk +BUILD_NLS:libiconv-full +kmod-usb-acm +kmod-usb-serial +kmod-usb-serial-option +libusb-1.0 +alsa-lib
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: Asterisk Mobile Telephony Module
+Maintainer: Jiri Slachta <jiri@slachta.eu>
+Source: asterisk-chan-quectel-2.1-20220526.tar.xz
+License: GPL-2.0
+LicenseFiles: COPYRIGHT.txt LICENSE.txt
+Type: ipkg
+Description:  Asterisk channel driver for mobile telephony.
+https://github.com/IchthysMaranatha/asterisk-chan-quectel
+Jiri Slachta <jiri@slachta.eu>
+@@
+
+

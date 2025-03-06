@@ -1,0 +1,24 @@
+Source-Makefile: feeds/modemfeed/packages/net/totd/Makefile
+
+Package: totd
+Version: 1.5.3-2
+Depends: +libc 
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: Trick or Treat Daemon (TOTD)
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: totd-1.5.3.tar.gz
+License: LICENSE
+LicenseFiles: COPYING
+Type: ipkg
+Description: 	Totd is a small DNS64 proxy nameserver that supports IPv6 only hosts/networks
+	that communicate with the IPv4 world using some translation mechanism. 
+https://github.com/fwdillema/totd
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

@@ -1,0 +1,44 @@
+Source-Makefile: feeds/modemfeed/luci/applications/luci-app-ttl/Makefile
+Build-Depends: lua/host luci-base/host LUCI_CSSTIDY:csstidy/host LUCI_SRCDIET:luasrcdiet/host 
+
+Package: luci-app-ttl
+Submenu: 3. Applications
+Version: 0.0.3
+Depends: +libc +luci-app-firewall +iptables-mod-ipopt +kmod-ipt-ipopt
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: Antitethering module for luci-app-firewall
+Maintainer: OpenWrt LuCI community
+Source: 
+License: Apache-2.0
+Type: ipkg
+Description: Antitethering module for luci-app-firewall
+https://github.com/openwrt/luci
+OpenWrt LuCI community
+@@
+
+Package: luci-i18n-ttl-ru
+Default: LUCI_LANG_ru||(ALL&&m)
+Version: x
+Depends: +libc luci-app-ttl
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-ttl - ru translation
+Maintainer: 
+Source: 
+License: Apache-2.0
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-ttl - Русский (Russian)
+
+@@
+
+

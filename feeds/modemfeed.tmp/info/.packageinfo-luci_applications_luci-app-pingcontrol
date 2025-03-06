@@ -1,0 +1,42 @@
+Source-Makefile: feeds/modemfeed/luci/applications/luci-app-pingcontrol/Makefile
+Build-Depends: lua/host luci-base/host LUCI_CSSTIDY:csstidy/host LUCI_SRCDIET:luasrcdiet/host 
+
+Package: luci-app-pingcontrol
+Submenu: 3. Applications
+Version: 1
+Depends: +libc +pingcontrol
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: LuCI network interface control
+Maintainer: OpenWrt LuCI community
+Source: 
+Type: ipkg
+Description: LuCI network interface control
+https://github.com/openwrt/luci
+OpenWrt LuCI community
+@@
+
+Package: luci-i18n-pingcontrol-ru
+Default: LUCI_LANG_ru||(ALL&&m)
+Version: x
+Depends: +libc luci-app-pingcontrol
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-pingcontrol - ru translation
+Maintainer: 
+Source: 
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-pingcontrol - Русский (Russian)
+
+@@
+
+

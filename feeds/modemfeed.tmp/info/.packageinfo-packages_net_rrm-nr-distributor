@@ -1,0 +1,20 @@
+Source-Makefile: feeds/modemfeed/packages/net/rrm-nr-distributor/Makefile
+
+Package: rrm-nr-distributor
+Version: 0.0.1-1
+Depends: +libc +umdns
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: opt
+Category: Extra packages
+Repository: base
+Title: 802.11k Neighbor Report distributor daemon
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: 
+Type: ipkg
+Description: 	802.11k Neighbor Report distributor daemon
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

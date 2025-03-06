@@ -7,7 +7,7 @@
 
 / {
 	compatible = "hilink,hlk-7621a-evb", "mediatek,mt7621-soc";
-	model = "HiLink HLK-7621A evaluation board";
+	model = "HiLink HLK-7621A";
 
 	keys {
 		compatible = "gpio-keys";

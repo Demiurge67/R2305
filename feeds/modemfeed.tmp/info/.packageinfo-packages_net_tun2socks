@@ -1,0 +1,24 @@
+Source-Makefile: feeds/modemfeed/packages/net/tun2socks/Makefile
+Build-Depends: golang/host
+
+Package: tun2socks
+Version: 2.5.2-250128~master-1
+Depends: +libc @(aarch64||arm||i386||i686||mips||mips64||mips64el||mipsel||powerpc64||riscv64||x86_64) +ca-bundle +kmod-tun +ip-full +coreutils-base64
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: tun to socks proxy redirector written on golang
+Maintainer: Konstantine Shevlakov <shevlako@132lan.ru>
+Source: tun2socks-2.5.2.tar.xz
+License: GPL-3.0
+LicenseFiles: LICENSE
+Type: ipkg
+Description: tun to socks proxy redirector written on golang
+https://github.com/xjasonlyu/tun2socks
+Konstantine Shevlakov <shevlako@132lan.ru>
+@@
+
+

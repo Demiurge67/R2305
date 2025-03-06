@@ -1,0 +1,22 @@
+Source-Makefile: feeds/modemfeed/packages/net/ookla-speedtest/Makefile
+
+Package: ookla-speedtest
+Version: 1.2.0-1
+Depends: +libc 
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: Speedtest from Ookla
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: 
+Type: ipkg
+Description: 	Speedtest CLI brings the trusted technology and global server network behind Speedtest to the command line.
+	Built for software developers, system administrators and computer enthusiasts alike,
+	Speedtest CLI is the first official Linux-native Speedtest application backed by Ookla®.
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

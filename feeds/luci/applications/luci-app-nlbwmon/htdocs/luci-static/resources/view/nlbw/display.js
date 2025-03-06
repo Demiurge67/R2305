@@ -828,7 +828,7 @@ return view.extend({
 				'load': L.bind(this.setupCharts, this)
 			}),
 
-			E('h2', [ _('Usage Statistics') ]),
+			E('h2', [ _('Netlink Bandwidth Monitor') ]),
 			this.renderPeriods(),
 
 			E('div', [

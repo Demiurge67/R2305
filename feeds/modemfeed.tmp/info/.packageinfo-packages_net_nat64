@@ -1,0 +1,21 @@
+Source-Makefile: feeds/modemfeed/packages/net/nat64/Makefile
+
+Package: kmod-nat64
+Submenu: Network Support
+Version: <LINUX_VERSION>+2021-06-30-1ba5895ff5f227fe9efd2d3765c4cdde6ac36899-
+Depends: @IPV6
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Stateless NAT64 translation kernel module
+Maintainer: Hans Dedecker <dedeckeh@gmail.com>
+Source: nat64-2021-06-30-1ba5895ff5f227fe9efd2d3765c4cdde6ac36899.tar.xz
+License: GPL-2.0
+Type: ipkg
+Description: Stateless NAT64 translation kernel module
+Hans Dedecker <dedeckeh@gmail.com>
+@@
+
+

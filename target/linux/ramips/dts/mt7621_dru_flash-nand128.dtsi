@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+&nand {
+	status = "okay";
+
+	partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "Bootloader";
+				reg = <0x00000 0x0080000>;
+				read-only;
+			};
+
+			partition@80000 {
+				label = "config";
+				reg = <0x80000 0x0080000>;
+			};
+
+			factory: partition@100000 {
+				label = "factory";
+				reg = <0x100000 0x0040000>;
+			};
+
+			partition@140000 {
+				label = "firmware";
+				compatible = "openwrt,uimage", "denx,uimage";
+				openwrt,padding = <96>;
+				reg = <0x140000 0x7E40000>;
+			};
+
+			partition@7F80000 {
+				label = "reserve";
+				reg = <0x7F80000 0x80000>;
+			};
+		};
+};

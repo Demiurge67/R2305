@@ -147,6 +147,41 @@ endef
 $(eval $(call KernelPackage,leds-apu))
 
 
+define KernelPackage/leds-ktd202x
+  SUBMENU:=LED modules
+  TITLE:=LED support for KTD202x Chips
+  DEPENDS:=+kmod-i2c-core +kmod-regmap-i2c
+  KCONFIG:=CONFIG_LEDS_KTD202X
+  FILES:= $(LINUX_DIR)/drivers/leds/rgb/leds-ktd202x.ko
+  AUTOLOAD:=$(call AutoProbe,leds-ktd202x,1)
+endef
+
+define KernelPackage/leds-ktd202x/description
+  This option enables support for the Kinetic KTD2026/KTD2027
+  RGB/White LED driver found in different BQ mobile phones.
+  It is a 3 or 4 channel LED driver programmed via an I2C interface.
+endef
+
+$(eval $(call KernelPackage,leds-ktd202x))
+
+
+define KernelPackage/leds-mlxcpld
+  SUBMENU:=$(LEDS_MENU)
+  TITLE:=LED support for the Mellanox boards
+  DEPENDS:=@TARGET_x86
+  KCONFIG:=CONFIG_LEDS_MLXCPLD
+  FILES:=$(LINUX_DIR)/drivers/leds/leds-mlxcpld.ko
+  AUTOLOAD:=$(call AutoProbe,leds-mlxcpld)
+endef
+
+define KernelPackage/leds-mlxcpld/description
+  This option enables support for the LEDs on the Mellanox
+  boards.
+endef
+
+$(eval $(call KernelPackage,leds-mlxcpld))
+
+
 define KernelPackage/leds-pca955x
   SUBMENU:=$(LEDS_MENU)
   TITLE:=LED driver for PCA955x I2C chips
@@ -196,6 +231,23 @@ define KernelPackage/leds-pwm/description
 endef
 
 $(eval $(call KernelPackage,leds-pwm))
+
+
+define KernelPackage/leds-st1202
+  SUBMENU:=LED modules
+  TITLE:=LED support for ST LED1202 I2C chips
+  DEPENDS:=+kmod-i2c-core +kmod-ledtrig-pattern
+  KCONFIG:=CONFIG_LEDS_ST1202
+  FILES:= $(LINUX_DIR)/drivers/leds/leds-st1202.ko
+  AUTOLOAD:=$(call AutoProbe,leds-st1202)
+endef
+
+define KernelPackage/leds-st1202/description
+  This option enables support for LEDs connected to LED1202
+  LED driver chips accessed via the I2C bus.
+endef
+
+$(eval $(call KernelPackage,leds-st1202))
 
 
 define KernelPackage/leds-tlc591xx
@@ -262,6 +314,23 @@ define KernelPackage/leds-lp55xx-common/description
 endef
 
 $(eval $(call KernelPackage,leds-lp55xx-common))
+
+
+define KernelPackage/leds-lp5523
+  SUBMENU:=$(LEDS_MENU)
+  TITLE:=LED driver for LP5523/LP55231 controllers
+  DEPENDS:=+kmod-i2c-core +kmod-leds-lp55xx-common
+  KCONFIG:=CONFIG_LEDS_LP5523
+  FILES:=$(LINUX_DIR)/drivers/leds/leds-lp5523.ko
+  AUTOLOAD:=$(call AutoLoad,60,leds-lp5523,1)
+endef
+
+define KernelPackage/leds-lp5523/description
+ This option enables support for Texas Instruments LP5523/LP55231
+ LED controllers.
+endef
+
+$(eval $(call KernelPackage,leds-lp5523))
 
 
 define KernelPackage/leds-lp5562

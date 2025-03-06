@@ -1,0 +1,23 @@
+Source-Makefile: feeds/modemfeed/packages/telephony/qtools/Makefile
+
+Package: qtools
+Version: 0.0.1-0~cross
+Depends: +libc +libreadline +libncurses
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: telephony
+Category: Utils
+Repository: base
+Title: Tools modems based on the Qualcom chipset
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: qtools-0.0.1.tar.gz
+License: LICENSE
+LicenseFiles: COPYING
+Type: ipkg
+Description: 	A set of tools for working with flash modems based on the Qualcom chipset The set consists of a package of utilities and a set of patched loaders.
+https://github.com/forth32/qtools
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

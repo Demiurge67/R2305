@@ -1,0 +1,64 @@
+Source-Makefile: feeds/modemfeed/luci/applications/luci-app-modeminfo/Makefile
+Build-Depends: lua/host luci-base/host LUCI_CSSTIDY:csstidy/host LUCI_SRCDIET:luasrcdiet/host 
+
+Package: luci-app-modeminfo
+Submenu: 3. Applications
+Version: 0.4.2
+Depends: +libc +modeminfo
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: Information dashboard for 3G/LTE dongle
+Maintainer: OpenWrt LuCI community
+Source: 
+License: GPLv3
+Type: ipkg
+Description: Information dashboard for 3G/LTE dongle
+https://github.com/openwrt/luci
+OpenWrt LuCI community
+@@
+
+Package: luci-i18n-modeminfo-ru
+Default: LUCI_LANG_ru||(ALL&&m)
+Version: x
+Depends: +libc luci-app-modeminfo
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-modeminfo - ru translation
+Maintainer: 
+Source: 
+License: GPLv3
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-modeminfo - Русский (Russian)
+
+@@
+
+Package: luci-i18n-modeminfo-zh-cn
+Default: LUCI_LANG_zh_Hans||(ALL&&m)
+Version: x
+Depends: +libc luci-app-modeminfo
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-modeminfo - zh-cn translation
+Maintainer: 
+Source: 
+License: GPLv3
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-modeminfo - 简体中文 (Chinese Simplified)
+
+@@
+
+

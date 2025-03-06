@@ -4,7 +4,7 @@
 . /lib/functions/network.sh
 . /usr/share/libubox/jshn.sh
 . /lib/mwan3/common.sh
- 
+
 report_connected_v4() {
 	local address
 
@@ -104,12 +104,16 @@ get_mwan3_status() {
 	online=$(get_online_time "$iface")
 	offline=$(get_offline_time "$iface")
 
-	config_get_bool enabled "$iface" enabled 0
+	config_get enabled "$iface" enabled 0
 
-	if [ -f "$MWAN3TRACK_STATUS_DIR/${iface}/STATUS" ]; then
+	if [ -d "${MWAN3_STATUS_DIR}" ]; then
 		network_get_uptime uptime "$iface"
 		network_is_up "$iface" && up="1"
-		status="$(cat "$MWAN3TRACK_STATUS_DIR/${iface}/STATUS")"
+		if [ -f "$MWAN3TRACK_STATUS_DIR/${iface}/STATUS" ]; then
+			status="$(cat "$MWAN3TRACK_STATUS_DIR/${iface}/STATUS")"
+		else
+			status="notracking"
+		fi
 	else
 		uptime=0
 		up=0
@@ -127,7 +131,6 @@ get_mwan3_status() {
 	json_add_string "status" "${status}"
 	json_add_boolean "enabled" "${enabled}"
 	json_add_boolean "running" "${running}"
-	json_add_string "tracking" "${track_status}"
 	json_add_boolean "up" "${up}"
 	json_add_array "track_ip"
 	for file in $MWAN3TRACK_STATUS_DIR/${iface}/TRACK_*; do

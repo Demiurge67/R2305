@@ -1,0 +1,44 @@
+Source-Makefile: feeds/modemfeed/packages/net/xtables-wgobfs/Makefile
+Build-Depends: iptables
+
+Package: iptables-mod-wgobfs
+Submenu: Firewall
+Version: 0.4.1-1
+Depends: +libc +iptables +kmod-ipt-wgobfs
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: WireGuard obfuscation iptables extension
+Maintainer: Wei Chen <weichen302@gmail.com>
+Source: xt_wgobfs-0.4.1.tar.xz
+License: GPL-2.0
+LicenseFiles: COPYING
+Type: ipkg
+Description: WireGuard obfuscation iptables extension
+https://github.com/infinet/xt_wgobfs
+Wei Chen <weichen302@gmail.com>
+@@
+
+Package: kmod-ipt-wgobfs
+Submenu: Netfilter Extensions
+Version: <LINUX_VERSION>+0.4.1-1
+Depends: +kmod-ipt-core
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: WireGuard obfuscation netfilter module
+Maintainer: Wei Chen <weichen302@gmail.com>
+Source: xt_wgobfs-0.4.1.tar.xz
+License: GPL-2.0
+LicenseFiles: COPYING
+Type: ipkg
+Description: WireGuard obfuscation netfilter module
+Wei Chen <weichen302@gmail.com>
+@@
+
+

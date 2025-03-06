@@ -1,0 +1,21 @@
+Source-Makefile: feeds/youtubeUnblock/youtubeUnblock/Makefile
+
+Package: youtubeUnblock
+Version: 1.0.0~f37c3dd-r10
+Depends: +libc +libpthread
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: services
+Category: Networking
+Repository: base
+Title: youtubeUnblock
+Maintainer: Vadim Vetrov <vetrovvd@gmail.com>
+Source: youtubeUnblock-1.0.0.tar.xz
+Type: ipkg
+Description: 	Bypasses Googlevideo detection systems that relies on SNI
+https://github.com/Waujito/youtubeUnblock
+Vadim Vetrov <vetrovvd@gmail.com>
+@@
+
+

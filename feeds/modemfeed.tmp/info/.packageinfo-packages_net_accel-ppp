@@ -1,0 +1,57 @@
+Source-Makefile: feeds/modemfeed/packages/net/accel-ppp/Makefile
+
+Package: accel-ppp
+Version: 1.13.0-20250110~master1
+Depends: +libc +libpcre2 +libopenssl +libpthread +librt +libatomic +libucontext
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: accel-ppp VPN server
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: accel-ppp-1.13.0.tar.xz
+License: GPL-2.0
+Type: ipkg
+Description: accel-ppp VPN server
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+Package: kmod-accel-ppp-ipoe
+Submenu: Accel-PPP kernel modules
+Version: <LINUX_VERSION>+1.13.0-20250110~master1
+Depends: +accel-ppp
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Accel-PPP IPoE kernel module
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: accel-ppp-1.13.0.tar.xz
+License: GPL-2.0
+Type: ipkg
+Description: Accel-PPP IPoE kernel module
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+Package: kmod-accel-ppp-vlan-mon
+Submenu: Accel-PPP kernel modules
+Version: <LINUX_VERSION>+1.13.0-20250110~master1
+Depends: +accel-ppp
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Accel-PPP vlan-mon kernel module
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: accel-ppp-1.13.0.tar.xz
+License: GPL-2.0
+Type: ipkg
+Description: Accel-PPP vlan-mon kernel module
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

@@ -1,0 +1,21 @@
+Source-Makefile: feeds/modemfeed/packages/net/ssw/Makefile
+
+Package: ssw
+Version: 0.0.1-1
+Depends: +libc +modemmanager +mwan3
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: opt
+Category: Extra packages
+Repository: base
+Title: SIM-card switcher and tracker
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: 
+Type: ipkg
+Description: 	SIM-card tracker for HuastLink HC-G60 and ZBTLint ZBT-WE2806-A
+	or similar CPE-routers with two SIM slots and one 4g/5G modem
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

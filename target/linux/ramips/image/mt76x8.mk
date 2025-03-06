@@ -28,7 +28,6 @@ define Build/ravpower-wd009-factory
 	@mv $@.new $@
 endef
 
-
 define Device/alfa-network_awusfree1
   IMAGE_SIZE := 7872k
   DEVICE_VENDOR := ALFA Network
@@ -37,6 +36,13 @@ define Device/alfa-network_awusfree1
   SUPPORTED_DEVICES += awusfree1
 endef
 TARGET_DEVICES += alfa-network_awusfree1
+
+define Device/antex_axr5u
+  IMAGE_SIZE := 32448k
+  DEVICE_VENDOR := ANTEX
+  DEVICE_MODEL := AXR-5U
+endef
+TARGET_DEVICES += antex_axr5u
 
 define Device/asus_rt-ac1200
   IMAGE_SIZE := 16064k

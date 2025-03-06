@@ -1,0 +1,22 @@
+Source-Makefile: feeds/modemfeed/packages/telephony/ttymux/Makefile
+
+Package: ttymux
+Version: 1
+Depends: +libc +libpthread +libstdcpp
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: Serial port multiplexer
+Maintainer: Konstatnine Shevlakov <shevlakov@132lan.ru>
+Source: ttymux-1.tar.xz
+License: GPL-2.0
+Type: ipkg
+Description: 	Is a serial multiplexer and demultiplexer protocol for Linux and a microcontroller.
+https://github.com/wd5gnr/SerialMux
+Konstatnine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

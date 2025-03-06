@@ -1,0 +1,75 @@
+<%
+
+%>
+<script type="text/javascript" src="<%=resource%>/xhr.js"></script>
+<script type="text/javascript">//<![CDATA[
+
+	function saveconf(btn)
+	{
+		XHR.get('<%=luci.dispatcher.build_url("admin", "profile", "savecfg")%>',
+			null,
+			function()
+			{
+				window.open('http://'+window.location.hostname+'/package/profilecfg.profile', '_self')
+			}
+		);
+	}
+	
+	function configup(btn)
+	{
+		var filex = btn.files[0];
+		var reader = new FileReader();
+		reader.readAsText(filex);
+		 reader.onload = loaded;
+	}
+	
+	function loaded(evt) 
+	{
+		var fileString = evt.target.result;
+		part1 = fileString;
+		part2 = "~~";
+		if ( fileString.length > 2000 )
+		{
+			part1 = fileString.substring(0,2000);
+			part2 = fileString.substring(2000);
+		}
+		
+		XHR.get('<%=luci.dispatcher.build_url("admin", "profile", "loadcfg1")%>',
+			{ set: part1 },
+			function()
+			{
+				XHR.get('<%=luci.dispatcher.build_url("admin", "profile", "loadcfg2")%>',
+					{ set1: part2 },
+					function()
+					{
+						window.location.reload(false);
+					}
+				);
+			}
+		);
+		
+	}
+
+//]]></script>
+
+<fieldset class="cbi-section" id="cbi-family">
+	<legend><%:Импорт/Экспорт профиля%></legend>
+	<table id="prochnge" border="0">
+		<tr>
+			<td width="10%">&nbsp;</td>
+    		<td width="20%"><div align="left"><%:Выгрузка профиля в файл%></div></td>
+			<td><input type="button" id="ebutton" class="cbi-button cbi-button-apply" value="<%:Экспорт%>" onclick="return saveconf(this)" /></td>
+		</tr>
+		<tr>
+			<td width="10%">&nbsp;</td>
+    		<td width="20%"><div align="left"><%:Загрузка файла профиля%></div></td>
+			<td><input type="file" accept=".profile" id="ibutton" class="cbi-button  cbi-button-positive" value="<%:Импорт%>" onchange="return configup(this)" /></td>
+		</tr>
+		<tr>
+			<td width="10%">&nbsp;</td>
+    		<td width="20%">&nbsp;</td>
+			<td><div align="left"><%:После загрузки файла страница автоматически перезагрузится%></div></td>
+		</tr>
+	</table>
+
+</fieldset>

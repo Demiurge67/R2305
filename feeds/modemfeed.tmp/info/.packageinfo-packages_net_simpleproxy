@@ -1,0 +1,25 @@
+Source-Makefile: feeds/modemfeed/packages/net/simpleproxy/Makefile
+
+Package: simpleproxy
+Submenu: Web Servers/Proxies
+Version: 3.5
+Depends: +libc 
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: simpleproxy OpenWRT package
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: simpleproxy-3.5.tar.gz
+License: GPLv2
+LicenseFiles: LICENSE
+Type: ipkg
+Description: 	Simpleproxy is a simple TCP proxy. It accepts connections on a local
+	TCP port and forward them to anoter port on a remote host via TCP.
+https://github.com/vzaliva/simpleproxy
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

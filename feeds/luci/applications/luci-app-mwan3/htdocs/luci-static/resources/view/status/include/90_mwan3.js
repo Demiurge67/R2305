@@ -60,50 +60,55 @@ return baseclass.extend({
 						tname = '';
 					}
 					break;
+				default:
+					css = 'alert-message warning';
+					state = _('Disabled');
+					time = '';
+					tname = '';
+					break;
 			}
-			if (css !== '' ) {
-				if (time !== '' ) {
-					container.appendChild(
-						E('div', { 'class': css }, [
-							E('div', {}, [
-								E('strong', {}, [
-									_('Interface'), ':', ' '
-								]),
-								iface
+
+			if (time !== '' ) {
+				container.appendChild(
+					E('div', { 'class': css }, [
+						E('div', {}, [
+							E('strong', {}, [
+								_('Interface'), ':', ' '
 							]),
-							E('div', {}, [
-								E('strong', {}, [
-									_('Status'), ':', ' '
-								]),
-								state
+							iface
+						]),
+						E('div', {}, [
+							E('strong', {}, [
+								_('Status'), ':', ' '
 							]),
-							E('div', {}, [
-								E('strong', {}, [
-									tname, ':', ' '
-								]),
-								time
-							])
+							state
+						]),
+						E('div', {}, [
+							E('strong', {}, [
+								tname, ':', ' '
+							]),
+							time
 						])
-					);
-				}
-				else {
-					container.appendChild(
-						E('div', { 'class': css }, [
-							E('div', {}, [
-								E('strong', {}, [
-									_('Interface'), ':', ' '
-								]),
-								iface
+					])
+				);
+			}
+			else {
+				container.appendChild(
+					E('div', { 'class': css }, [
+						E('div', {}, [
+							E('strong', {}, [
+								_('Interface'), ':', ' '
 							]),
-							E('div', {}, [
-								E('strong', {}, [
-									_('Status'), ':', ' '
-								]),
-								state
-							])
+							iface
+						]),
+						E('div', {}, [
+							E('strong', {}, [
+								_('Status'), ':', ' '
+							]),
+							state
 						])
-					);
-				}
+					])
+				);
 			}
 		}
 

@@ -1,0 +1,40 @@
+Source-Makefile: feeds/modemfeed/packages/net/ndpi-netfilter/Makefile
+
+Package: iptables-mod-ndpi
+Submenu: Firewall
+Version: 09172024-flow_info-4-1
+Depends: +libc +iptables +iptables-mod-conntrack-extra +kmod-ipt-ndpi +libpcap
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: ndpi successor of OpenDPI
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: ndpi-netfilter-09172024-flow_info-4.tar.bz2
+Type: ipkg
+Description: 	nDPI is a ntop-maintained superset of the popular OpenDPI library
+http://www.ntop.org/products/ndpi/
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+Package: kmod-ipt-ndpi
+Submenu: Netfilter Extensions
+Version: <LINUX_VERSION>+09172024-flow_info-4-1
+Depends: +kmod-nf-conntrack +kmod-nf-conntrack-netlink +kmod-ipt-compat-xtables +libpcap
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: nDPI net netfilter module
+Maintainer: 
+Source: ndpi-netfilter-09172024-flow_info-4.tar.bz2
+Type: ipkg
+Kernel-Config: CONFIG_LIVEPATCH=y CONFIG_NF_CONNTRACK=y CONFIG_NF_CONNTRACK_LABELS=y CONFIG_NETFILTER_XT_MATCH_CONNLABEL=y
+Description: nDPI net netfilter module
+
+@@
+
+

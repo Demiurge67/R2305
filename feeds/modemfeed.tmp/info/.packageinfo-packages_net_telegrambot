@@ -1,0 +1,20 @@
+Source-Makefile: feeds/modemfeed/packages/net/telegrambot/Makefile
+
+Package: telegrambot
+Version: 0.0.4-3
+Depends: +libc +curl
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: opt
+Category: Extra packages
+Repository: base
+Title: Openwrt Telegram Bot
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: 
+Type: ipkg
+Description: 	Telegram bot for router with firmware Lede/Openwrt.
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

@@ -1,0 +1,24 @@
+Source-Makefile: feeds/youtubeUnblock/luci-app-youtubeUnblock/Makefile
+Build-Depends: lua/host luci-base/host LUCI_CSSTIDY:csstidy/host LUCI_SRCDIET:luasrcdiet/host 
+
+Package: luci-app-youtubeUnblock
+Submenu: 3. Applications
+Version: x
+Depends: +libc +luci-base
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: LuCI Support for youtubeUnblock
+Maintainer: OpenWrt LuCI community
+Source: 
+License: GPL
+Type: ipkg
+Description: LuCI Support for youtubeUnblock
+https://github.com/openwrt/luci
+OpenWrt LuCI community
+@@
+
+

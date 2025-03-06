@@ -124,6 +124,9 @@ zyxel,ex5601-t0-ubootmod)
         ubootenv_add_uci_config "$envdev" "0x0" "0x1f000" "0x20000" "1"
         ubootenv_add_uci_config "$envdev2" "0x0" "0x1f000" "0x20000" "1"
         ;;
+tplink,archer-ax80-v1)
+        ubootenv_add_uci_config "/dev/mtd1" "0x0" "0x20000" "0x20000" "8"
+	;;
 zyxel,ex5700-telenor)
 	ubootenv_add_uci_config "/dev/ubootenv" "0x0" "0x4000" "0x4000" "1"
 	;;

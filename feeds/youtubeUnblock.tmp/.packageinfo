@@ -1,0 +1,86 @@
+Source-Makefile: feeds/youtubeUnblock/kyoutubeUnblock/Makefile
+
+Package: kmod-youtubeUnblock
+Version: <LINUX_VERSION>.1.0.0~f37c3dd-r10
+Depends: 
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Networking
+Title: kmod youtubeUnblock
+Maintainer: Vadim Vetrov <vetrovvd@gmail.com>
+Source: youtubeUnblock-1.0.0.tar.xz
+Type: ipkg
+Description: kmod youtubeUnblock
+https://github.com/Waujito/youtubeUnblock
+Vadim Vetrov <vetrovvd@gmail.com>
+@@
+
+
+Source-Makefile: feeds/youtubeUnblock/luci-app-youtubeUnblock/Makefile
+Build-Depends: lua/host luci-base/host LUCI_CSSTIDY:csstidy/host LUCI_SRCDIET:luasrcdiet/host 
+
+Package: luci-app-youtubeUnblock
+Submenu: 3. Applications
+Version: x
+Depends: +libc +luci-base
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: LuCI Support for youtubeUnblock
+Maintainer: OpenWrt LuCI community
+Source: 
+License: GPL
+Type: ipkg
+Description: LuCI Support for youtubeUnblock
+https://github.com/openwrt/luci
+OpenWrt LuCI community
+@@
+
+
+Source-Makefile: feeds/youtubeUnblock/youtubeUnblock/Makefile
+
+Package: youtubeUnblock
+Version: 1.0.0~f37c3dd-r10
+Depends: +libc +libpthread
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: services
+Category: Networking
+Repository: base
+Title: youtubeUnblock
+Maintainer: Vadim Vetrov <vetrovvd@gmail.com>
+Source: youtubeUnblock-1.0.0.tar.xz
+Type: ipkg
+Description: 	Bypasses Googlevideo detection systems that relies on SNI
+https://github.com/Waujito/youtubeUnblock
+Vadim Vetrov <vetrovvd@gmail.com>
+@@
+
+
+Source-Makefile: feeds/youtubeUnblock/youtubeUnblockEntware/Makefile
+
+Package: youtubeUnblockEntware
+Version: 1.0.0~f37c3dd-r10
+Depends: +libc +libpthread
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Networking
+Repository: base
+Title: youtubeUnblock
+Maintainer: Vadim Vetrov <vetrovvd@gmail.com>
+Source: youtubeUnblockEntware-1.0.0.tar.xz
+Type: ipkg
+Description: 	Bypasses Googlevideo detection systems that relies on SNI
+https://github.com/Waujito/youtubeUnblock
+Vadim Vetrov <vetrovvd@gmail.com>
+@@
+
+

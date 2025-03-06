@@ -1,0 +1,61 @@
+Source-Makefile: feeds/modemfeed/luci/applications/luci-app-atinout/Makefile
+Build-Depends: lua/host luci-base/host LUCI_CSSTIDY:csstidy/host LUCI_SRCDIET:luasrcdiet/host 
+
+Package: luci-app-atinout
+Submenu: 3. Applications
+Version: 0.1.0
+Depends: +libc +atinout
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: LuCI JS Support for AT commands
+Maintainer: OpenWrt LuCI community
+Source: 
+Type: ipkg
+Description:    LuCI JS interface for the atinout.
+https://github.com/openwrt/luci
+OpenWrt LuCI community
+@@
+
+Package: luci-i18n-atinout-ru
+Default: LUCI_LANG_ru||(ALL&&m)
+Version: x
+Depends: +libc luci-app-atinout
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-atinout - ru translation
+Maintainer: 
+Source: 
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-atinout - Русский (Russian)
+
+@@
+
+Package: luci-i18n-atinout-zh-cn
+Default: LUCI_LANG_zh_Hans||(ALL&&m)
+Version: x
+Depends: +libc luci-app-atinout
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Repository: base
+Title: luci-app-atinout - zh-cn translation
+Maintainer: 
+Source: 
+Type: ipkg
+Hidden: 1
+Description:     Translation for luci-app-atinout - 简体中文 (Chinese Simplified)
+
+@@
+
+

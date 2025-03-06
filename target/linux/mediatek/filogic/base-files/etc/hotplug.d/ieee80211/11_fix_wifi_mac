@@ -99,6 +99,7 @@ case "$board" in
 	jdcloud,re-cp-03)
 		[ "$PHYNBR" = "1" ] && mmc_get_mac_binary factory 0xa > /sys${DEVPATH}/macaddress
 		;;
+	tplink,archer-ax80-v1|\
 	mercusys,mr90x-v1)
 		addr=$(get_mac_binary "/tmp/tp_data/default-mac" 0)
 		[ "$PHYNBR" = "0" ] && echo "$addr" > /sys${DEVPATH}/macaddress

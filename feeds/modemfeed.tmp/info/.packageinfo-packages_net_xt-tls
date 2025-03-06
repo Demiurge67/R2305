@@ -1,0 +1,41 @@
+Source-Makefile: feeds/modemfeed/packages/net/xt-tls/Makefile
+
+Package: iptables-mod-tls
+Version: 0.3.5-1
+Depends: +libc libxtables
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Repository: base
+Title: iptables library for filtering TLS connections
+Maintainer: Nils Andreas Svee <me@lochnair.net>
+Source: xt_tls-0.3.5.tar.gz
+License: GPL-3.0
+LicenseFiles: LICENSE
+Type: ipkg
+Description: 	iptables module for filtering TLS connections
+Nils Andreas Svee <me@lochnair.net>
+@@
+
+Package: kmod-ipt-tls
+Submenu: Other modules
+Version: <LINUX_VERSION>+0.3.5-1
+Depends: kmod-nf-ipt
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: iptables module for filtering TLS connections
+Maintainer: Nils Andreas Svee <me@lochnair.net>
+Source: xt_tls-0.3.5.tar.gz
+License: GPL-3.0
+LicenseFiles: LICENSE
+Type: ipkg
+Description: 	A iptables module for filtering TLS connections.
+Nils Andreas Svee <me@lochnair.net>
+@@
+
+

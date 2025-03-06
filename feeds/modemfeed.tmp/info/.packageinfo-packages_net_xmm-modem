@@ -1,0 +1,21 @@
+Source-Makefile: feeds/modemfeed/packages/net/xmm-modem/Makefile
+
+Package: xmm-modem
+Version: 0.1.4-5
+Depends: +libc +comgt +kmod-usb-acm +kmod-usb-serial-option +kmod-usb-net-cdc-ncm +kmod-usb-net-rndis
+Conflicts: 
+Menu-Depends: 
+Provides: 
+Section: opt
+Category: Extra packages
+Repository: base
+Title: Fibocom L850/L860/FM350 protocol
+Maintainer: Konstantine Shevlakov <shevlakov@132lan.ru>
+Source: 
+Type: ipkg
+Description: 	Simple connect to cellular for Fibocom L850/L860/FM350 module.
+	Intel XMM LTE-A 7360/7560 and MediaTek T700 chipsets
+Konstantine Shevlakov <shevlakov@132lan.ru>
+@@
+
+

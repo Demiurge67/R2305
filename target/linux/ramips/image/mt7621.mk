@@ -459,6 +459,28 @@ define Device/beeline_smartbox-turbo-plus
 endef
 TARGET_DEVICES += beeline_smartbox-turbo-plus
 
+define Device/beeline_sbtplusspi
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  DEVICE_MODEL := Beeline Smart Box Turbo+ SPI
+  DEVICE_VENDOR := Beeline
+  IMAGE_SIZE := 16064k
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-usb3 \
+	kmod-usb-ledtrig-usbport kmod-mt7615-firmware
+endef
+TARGET_DEVICES += beeline_sbtplusspi
+
+define Device/beeline_sbgigaspi
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  DEVICE_VENDOR := Beeline
+  IMAGE_SIZE := 16064k
+  DEVICE_MODEL := Beeline SB Giga SPI
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-usb3 \
+	kmod-usb-ledtrig-usbport kmod-mt7663-firmware-ap
+endef
+TARGET_DEVICES += beeline_sbgigaspi
+
 define Device/belkin_rt1800
   $(Device/nand)
   IMAGE_SIZE := 49152k
@@ -780,6 +802,21 @@ define Device/dlink_dir-853-r1
   DEVICE_PACKAGES += kmod-usb3 kmod-usb-ledtrig-usbport
 endef
 TARGET_DEVICES += dlink_dir-853-r1
+
+define Device/dlink_dir-853-r3
+  $(Device/nand)
+  DEVICE_MODEL := DIR-853
+  DEVICE_VARIANT := R3
+  IMAGE_SIZE := 40960k
+  DEVICE_VENDOR := D-Link
+  DEVICE_PACKAGES := kmod-mt7615-firmware kmod-usb3 \
+        kmod-usb-ledtrig-usbport -uboot-envtools
+  KERNEL := $$(KERNEL)
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | \
+        check-size
+endef
+TARGET_DEVICES += dlink_dir-853-r3
 
 define Device/dlink_dir-860l-b1
   $(Device/dsa-migration)

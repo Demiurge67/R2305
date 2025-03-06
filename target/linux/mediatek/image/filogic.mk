@@ -806,6 +806,47 @@ define Device/routerich_ax3000
 endef
 TARGET_DEVICES += routerich_ax3000
 
+define Device/routerich_ax3000-mod
+  DEVICE_VENDOR := Routerich
+  DEVICE_MODEL := AX3000-112M
+  DEVICE_DTS := mt7981b-routerich-ax3000-mod
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES := kmod-mt7981-firmware mt7981-wo-firmware kmod-usb3
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  SUPPORTED_DEVICES += mediatek,mt7981-spim-snand-rfb
+endef
+TARGET_DEVICES += routerich_ax3000-mod
+
+define Device/tplink_archer-ax80-v1
+  DEVICE_VENDOR := TP-Link
+  DEVICE_MODEL := Archer AX80 V1
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES := kmod-mt7986-firmware mt7986-wo-firmware kmod-usb3 kmod-mt7915e kmod-leds-lp55xx-common
+  DEVICE_DTS := mt7986a-tplink-archer-ax80-v1
+  UBINIZE_OPTS := -E 5
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_IN_UBI := 1
+  IMAGE_SIZE := 51200k
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += tplink_archer-ax80-v1
+
+define Device/tplink_archer-ax80-v1-100-mod
+  DEVICE_VENDOR := TP-Link
+  DEVICE_MODEL := Archer AX80V1-100
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES := kmod-mt7986-firmware mt7986-wo-firmware kmod-usb3 kmod-mt7915e kmod-leds-lp55xx-common
+  DEVICE_DTS := mt7986a-tplink-archer-ax80-v1
+  UBINIZE_OPTS := -E 5
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  KERNEL_IN_UBI := 1
+  IMAGE_SIZE := 102400k
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += tplink_archer-ax80-v1-100-mod
+
 define Device/tplink_tl-xdr-common
   DEVICE_VENDOR := TP-Link
   DEVICE_DTS_DIR := ../dts
