@@ -1,4 +1,28 @@
 # Put your custom commands here that should be executed once
 # the system init finished. By default this file does nothing.
 
+
+echo "05c6 90d5" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "1e2d 00b3" > /sys/bus/usb-serial/drivers/option1/new_id
+echo "1e2d 00b7" > /sys/bus/usb/drivers/qmi_wwan/new_id
+
+# Для фиксации TTL раскомментируйте эти строки
+# iptables -t mangle -A POSTROUTING -j TTL --ttl-set 44
+# iptables -t mangle -A OUTPUT -j TTL --ttl-set 44
+# iptables -t mangle -I PREROUTING -j TTL --ttl-set 44
+# ip6tables -t mangle -A POSTROUTING ! -p icmpv6 -j HL --hl-set 44
+# ip6tables -t mangle -A OUTPUT ! -p icmpv6 -j HL --hl-set 44
+# ip6tables -t mangle -I PREROUTING ! -p icmpv6 -j HL --hl-set 44
+
+# 
+# Cкрипт обхода блокировок
+#
+
+service https-dns-proxy enable
+service https-dns-proxy start
+
+service firewall restart
+
+wget -O - https://raw.githubusercontent.com/routerich/RouterichAX3000_configs/refs/heads/main/configure_zaprets.sh | sh
+
 exit 0
