@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+#include "ar9331_tplink_tl-wr741nd-v4.dtsi"
+
+/ {
+	compatible = "tplink,tl-mr3220-v2-16", "qca,ar9331";
+	model = "TP-Link TL-MR3220 v2-16";
+
+	reg_usb_vbus: regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "usb_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio 8 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+};
+
+&usb {
+	status = "okay";
+
+	dr_mode = "host";
+	vbus-supply = <&reg_usb_vbus>;
+};
+
+&usb_phy {
+	status = "okay";
+};
+
