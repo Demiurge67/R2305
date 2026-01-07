@@ -1,0 +1,12 @@
+--- a/drivers/net/wireless/broadcom/b43/main.c
++++ b/drivers/net/wireless/broadcom/b43/main.c
+@@ -5328,6 +5328,8 @@ static void b43_supported_bands(struct b43
+ 	case 0x435f: /* BCM6362 */
+ 	case 0x4331: /* BCM4331 */
+ 	case 0x4359: /* BCM43228 */
++	case 0x4332: /* BCM4331 variant 1 (RT-N66U phy0) */
++	case 0x4333: /* BCM4331 variant 2 (RT-N66U phy1) */
+ 	case 0x43a0: /* BCM4360 */
+ 	case 0x43b1: /* BCM4352 */
+ 		/* Dual band devices */
+
