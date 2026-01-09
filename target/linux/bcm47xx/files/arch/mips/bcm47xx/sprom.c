@@ -38,6 +38,7 @@ static const struct ssb_sprom bcm4331_5ghz_sprom_template = {
     .txchain             = 0x07,
     .rxchain             = 0x07,
     .regrev              = 0x26,    /* regrev=38 (0x26) */
+    
 };
 
 /* Колбэк, который будет передан в bcma_arch_register_fallback_sprom */
@@ -146,7 +147,7 @@ static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *ou
         out->pa1hib2 = 0x1684;
         
         /* MCS для 802.11n в 5 ГГц */
-        /* mcsbw205gmpo=0x75311111 */
+        /* mcsbw205gpo=0x75311111 */
         out->mcs5gpo[0] = 0x7531;
         out->mcs5gpo[1] = 0x1111;
         out->mcs5gpo[2] = 0x7531;
@@ -173,7 +174,8 @@ static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *ou
         out->regrev = 0x26;  /* regrev=38 (0x26) */
         
         /* Дополнительные параметры */
-        out->parefldo = 0x3C;  /* parefldovoltage=60 (0x3C) */
+//        out->parefldo = 0x3C;  //
+        /* parefldovoltage=60 (0x3C) */
         
         pr_info(PFX "-> SPROM для второго чипа готов. boardflags_hi=0x%04x\n", 
                 out->boardflags_hi);
