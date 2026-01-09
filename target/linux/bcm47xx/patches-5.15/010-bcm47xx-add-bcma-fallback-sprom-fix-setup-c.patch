@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: OpenWrt User <user@openwrt.org>
+Date: Mon, 1 Jan 2024 12:00:00 +0300
+Subject: [PATCH] bcm47xx: register bcma fallback sprom provider
+
+Registers the architecture-specific fallback SPROM callback for BCMA bus.
+This is required for devices where SPROM cannot be read from hardware
+(e.g., the second BCM4331 radio on ASUS RT-N66U) to provide correct
+calibration data and enable 5 GHz band support.
+
+Signed-off-by: OpenWrt User <user@openwrt.org>
+---
+ arch/mips/bcm47xx/setup.c | 10 ++++++++++
+ 1 file changed, 8 insertions(+)
+
+--- a/arch/mips/bcm47xx/setup.c
++++ b/arch/mips/bcm47xx/setup.c
+@@ -45,6 +45,7 @@
+ #include <asm/time.h>
+ #include <bcm47xx.h>
+ #include <bcm47xx_board.h>
++#include <asm/mach-bcm47xx/bcm47xx_fallback_sprom.h>
+ 
+ union bcm47xx_bus bcm47xx_bus;
+ EXPORT_SYMBOL(bcm47xx_bus);
+@@ -152,6 +152,7 @@ void __init plat_mem_setup(void)
+ 		pr_info("Using bcma bus\n");
+ #ifdef CONFIG_BCM47XX_BCMA
+ 		bcm47xx_bus_type = BCM47XX_BUS_TYPE_BCMA;
++		bcm47xx_register_fallback_sprom(); /* Регистрация нашего fallback SPROM для BCMA */
+ 		bcm47xx_register_bcma();
+ 		bcm47xx_set_system_type(bcm47xx_bus.bcma.bus.chipinfo.id);
+ #ifdef CONFIG_HIGHMEM
