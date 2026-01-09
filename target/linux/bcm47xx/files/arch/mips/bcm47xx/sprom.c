@@ -147,10 +147,10 @@ static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *ou
         
         /* MCS для 802.11n в 5 ГГц */
         /* mcsbw205gmpo=0x75311111 */
-        out->mcs5gmpo[0] = 0x7531;
-        out->mcs5gmpo[1] = 0x1111;
-        out->mcs5gmpo[2] = 0x7531;
-        out->mcs5gmpo[3] = 0x1111;
+        out->mcs5gpo[0] = 0x7531;
+        out->mcs5gpo[1] = 0x1111;
+        out->mcs5gpo[2] = 0x7531;
+        out->mcs5gpo[3] = 0x1111;
         
         /* mcsbw205glpo=0x00000000 */
         out->mcs5glpo[0] = 0x0000;
