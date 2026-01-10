@@ -19,6 +19,7 @@
 /* Шаблон для второго чипа BCM4331 (5 ГГц) на шине 1, слот 1 */
 static const struct ssb_sprom bcm4331_5ghz_sprom_template = {
     .revision            = 9,
+    .dev_id              = 0x4333,
     .boardflags_lo       = 0x0200,  /* Из boardflags=0x90000200 */
     .boardflags_hi       = 0x9000,  /* КРИТИЧЕСКИЙ ФЛАГ: SSB_BFL2_5GHZ */
     .boardflags2_lo      = 0x0000,
@@ -38,13 +39,34 @@ static const struct ssb_sprom bcm4331_5ghz_sprom_template = {
     .txchain             = 0x07,
     .rxchain             = 0x07,
     .regrev              = 0x26,    /* regrev=38 (0x26) */
-    
+    .fem.ghz5.tr_iso     = 3,
+    .fem.ghz5.tssipos    = 1,
+    .elna5g              = 2,
+    .fem.ghz5.extpa_gain = 3,
+    .antenna_gain.a0     = 0,
+    .antenna_gain.a1     = 0,
+    .antenna_gain.a2     = 0,
+    .gpio0               = 2,
+    .gpio1               = 5,
+    .gpio2               = 4,
+    .gpio3               = 11,
+    .fem.ghz5.antswlut   = 0,
+    .antswitch           = 0,
+    .leddc_on_time       = 0xFF,
+//    .legofdm40duppo      = 0x2222,
+//    .legofdmbw205ghpo    = 0x75311111//
+//    .legofdmbw205glpo    = 0x00000000//
+//    .legofdmbw205gmpo    = 0x75311111//
+//    .legofdmbw20ul5ghpo  = 0x75311111//
+//    .legofdmbw20ul5glpo  = 0x00000000//
+//    .legofdmbw20ul5gmpo  = 0x75311111//
+
 };
 
-/* Колбэк, который будет передан в bcma_arch_register_fallback_sprom */
+/* Callback, который будет передан в bcma_arch_register_fallback_sprom */
 static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *out)
 {
-    struct pci_dev *pdev;
+    struct pci_dev *pdev = bus->host_pci;
 
     if (!bus || !out || !bus->host_pci)
         return -ENODEV;
@@ -53,12 +75,12 @@ static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *ou
 
     /* Первый чип на 0000:00:01.0 (bus 0, slot 1) */
     if (pdev->bus->number == 0 && PCI_SLOT(pdev->devfn) == 1) {
-        pr_info(PFX "-> Первый BCM4331 (0000:00:01.0). Заполняем SPROM из pci/1/1/\n");
+        pr_info(PFX "-> Первый BCM4331(0x4332) (0000:00:01.0). Заполняем SPROM из pci/1/1/\n");
 
         memset(out, 0, sizeof(struct ssb_sprom));
         
-        /* Аппаратный ID одинаков для обоих чипов */
-        out->dev_id = 0x4331;
+        /* Аппаратный ID НЕ одинаков для обоих чипов */
+        out->dev_id = 0x4332;
         out->revision = 9;  /* sromrev=9 */
         
         /* BOARD FLAGS из NVRAM: pci/1/1/boardflags=0x80001200 */
@@ -103,19 +125,19 @@ static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *ou
         return 0;
     }
 
-    /* Второй чип на 0000:01:01.0 (bus 1, slot 1) */
+    /* Второй чип 5 GHz на 0000:01:01.0 (bus 1, slot 1) */
     if (pdev->bus->number == 1 && PCI_SLOT(pdev->devfn) == 1) {
-        pr_info(PFX "-> Второй BCM4331 (0000:01:01.0). Заполняем SPROM из pci/2/1/\n");
+        pr_info(PFX "-> Второй BCM4331(0x4332) (0000:01:01.0). Заполняем SPROM из pci/2/1/\n");
 
         memset(out, 0, sizeof(struct ssb_sprom));
         
         /* Аппаратный ID одинаков для обоих чипов */
-        out->dev_id = 0x4331;
+        out->dev_id = 0x4332;
         out->revision = 9;  /* sromrev=9 */
         
         /* КРИТИЧЕСКИ ВАЖНО: флаги для 5 ГГц */
         /* pci/2/1/boardflags=0x90000200 */
-        out->boardflags_lo = 0x0200;  /* Младшие 16 бит */
+        out->boardflags_lo = 0x0100;  /* Младшие 16 бит BCMA_BFL2_5GHZ*/
         out->boardflags_hi = 0x9000;  /* Старшие 16 бит (SSB_BFL2_5GHZ | SSB_BFL2_5GHP) */
         
         /* BOARD FLAGS 2: pci/2/1/boardflags2=0x00200000 */
@@ -124,7 +146,7 @@ static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *ou
         
         /* Антенны и цепи */
         out->ant_available_a = 0x07;   /* rxchain=7 для 5 ГГц */
-        out->ant_available_bg = 0x07;  /* также 3 антенны для 2.4 ГГц */
+        out->ant_available_bg = 0x00;  /* также 3 антенны для 2.4 ГГц */
         out->txchain = 0x07;
         out->rxchain = 0x07;
         
@@ -134,9 +156,9 @@ static int bcm47xx_get_fallback_sprom(struct bcma_bus *bus, struct ssb_sprom *ou
         out->maxpwr_al = 0x40;  /* maxp5gla0=0x40 */
         
         /* Калибровка усилителя 5 ГГц */
-        out->pa1b0 = 0x1663;  /* pa5gw1a0=0x1663 */
-        out->pa1b1 = 0x1676;  /* pa5gw1a1=0x1676 */
-        out->pa1b2 = 0x15FA;  /* pa5gw1a2=0x15FA */
+        out->pa1b0 = 0xFEAC;  /* pa5gw1a0=0x1663 */
+        out->pa1b1 = 0xFEAC;  /* pa5gw1a1=0x1676 */
+        out->pa1b2 = 0xFEAC;  /* pa5gw1a2=0x15FA */
         
         out->pa1lob0 = 0x1637;  /* pa5glw1a0=0x1637 */
         out->pa1lob1 = 0x1591;
