@@ -1,0 +1,8 @@
+--- a/drivers/net/wireless/broadcom/b43/main.c
++++ b/drivers/net/wireless/broadcom/b43/main.c
+@@ -5345,4 +5345,4 @@ static void b43_supported_bands(struct b43
+ 		*have_2ghz_phy = true;
+-		*have_5ghz_phy = false;
++		*have_5ghz_phy = true;
+ 		return;
+ 	}
