@@ -1,0 +1,57 @@
+From: Adapted from DD-WRT commit c93377c4b623c6ed405cf6cd962a34f71e78456d
+Subject: [PATCH] MIPS: BCM47XX: register extra HIGHMEM on BCM4706
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This implements the missing highmem initialization for BCM4706 SoC,
+enabling the use of memory above 128MB (up to 256MB) on devices like
+ASUS RT-N66U. It replaces the TODO stub in bcm47xx_prom_highmem_init()
+with actual memory registration using the modern memblock API.
+
+Signed-off-by: Demiurge67 <dem@dem.dem>
+
+---
+ arch/mips/bcm47xx/prom.c | 11 +++++++++-------
+ 1 file changed, 9 insertions(+), 7
+diff --git a/arch/mips/bcm47xx/prom.c b/arch/mips/bcm47xx/prom.c
+index a9bea411d928..c5ec18b2e4e8 100644
+--- a/arch/mips/bcm47xx/prom.c
++++ b/arch/mips/bcm47xx/prom.c
+@@ -167,9 +167,28 @@ void __init bcm47xx_prom_highmem_init(void)
+  	early_tlb_init();
+ 
+-	if (!extmem)
+-		return;
+-
+-	pr_warn("Found %lu MiB of extra memory, but highmem is unsupported yet!\n",
+-		extmem >> 20);
+-
+-	/* TODO: Register extra memory */
++	if (!extmem) {
++		pr_debug("No extra memory found\n");
++ 		return;
++	}
++
++	/*
++	 * BCM4706: Second 128MB memory bank is physically located at 0x87fff000.
++	 * This matches the memory map used by DD-WRT and FreshTomato.
++	 * First bank (lowmem) is already registered in prom_init_mem().
++	 */
++	/* memblock_add(0x00000000, 0x07ffefff); */
++	memblock_add(0x08000000, 0x07ffffff);
++	/* memblock_add(lowmem, extmem); */
++	/*
++	 * CRITICAL: Force the kernel to treat all memory as lowmem.
++	 * This bypasses the highmem safety check for this platform.
++	 */
++	/* max_low_pfn = PFN_UP(lowmem + extmem); */
++	/* max_low_pfn = PFN_UP(__pa(mips_lowmem_limit)) + (extmem >> PAGE_SHIFT); */
++	pr_info("********* Registered %lu MiB of some new extra fucking memory without PHYS_OFFSET at 0x%08lx\n, *********",
++ 		extmem >> 20, (unsigned long)(0x87ffefff + lowmem));
++
++	/* extern unsigned long max_low_pfn; */
++	/* max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT; */
++	/* pr_info("Adjusted max_low_pfn to %lu\n", max_low_pfn); */
++	/* I DO IT: Register extra memory! */
+ }

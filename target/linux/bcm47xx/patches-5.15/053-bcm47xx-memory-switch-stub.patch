@@ -1,0 +1,18 @@
+--- a/arch/mips/bcm47xx/setup.c
++++ b/arch/mips/bcm47xx/setup.c
+@@ -52,6 +52,15 @@ 
+ enum bcm47xx_bus_type bcm47xx_bus_type;
+ EXPORT_SYMBOL(bcm47xx_bus_type);
+ 
++void __init bcm47xx_memory_switch(void)
++{
++	/*
++	 * TODO: Implement actual memory bank switching if required.
++	 * This might involve writing to ChipCommon or PMU registers.
++	 */
++	pr_debug("************ bcm47xx_memory_switch: stub called\n");
++}
++ 
+ static void bcm47xx_machine_restart(char *command)
+ {
+ 	pr_alert("Please stand by while rebooting the system...\n");
