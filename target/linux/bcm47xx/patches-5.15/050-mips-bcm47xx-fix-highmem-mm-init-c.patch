@@ -12,7 +12,7 @@ This commit provides the correct constants for BCM47xx SoCs like BCM4706.
  1 file changed, 6 deletion (-)
  create mode 100644 arch/mips/mm/init.c
 
-diff --git a/arch/mips/mm/init.c b/aarch/mips/mm/init.c
+diff --git a/arch/mips/mm/init.c b/arch/mips/mm/init.c
 new file mode 100644
 index 000000000000..3c661b5e50e1
 --- /arch/mips/mm/init.c
