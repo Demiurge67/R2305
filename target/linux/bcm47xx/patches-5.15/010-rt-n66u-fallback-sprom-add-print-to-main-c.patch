@@ -3,5 +3,5 @@
 @@ -5362,2 +5362,3 @@ static void b43_supported_bands(struct b43
  
  	B43_WARN_ON(1);
-+	b43info(dev->wl, "Просматриваем содержимое, извлеченное из SPROM: ant_available_a=0x%x, boardflags_lo=0x%04x, boardflags_hi=0x%04x\n", ...);
++	b43info(dev->wl, " ******* Readind  SPROM data: ant_available_a=0x%x, boardflags_lo=0x%04x, boardflags_hi=0x%04x\n", ...);
 
