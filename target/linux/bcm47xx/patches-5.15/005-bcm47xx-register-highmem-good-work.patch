@@ -1,0 +1,61 @@
+From: Demiurge67 <dem@dem.dem>
+Subject: [PATCH] MIPS: BCM47XX: register extra HIGHMEM on BCM4706
+
+This implements the missing highmem initialization for BCM4706 SoC,
+enabling the use of memory above 128MB (up to 256MB) on devices like
+ASUS RT-N66U. It replaces the TODO stub in bcm47xx_prom_highmem_init()
+with actual memory registration using the modern memblock API.
+
+Signed-off-by: Demiurge67 <dem@dem.dem>
+
+ arch/mips/bcm47xx/prom.c | 29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
+
+diff --git a/arch/mips/bcm47xx/prom.c b/arch/mips/bcm47xx/prom.c
+index a9bea411d928..7c3c0b57e9b0 100644
+--- a/arch/mips/bcm47xx/prom.c
++++ b/arch/mips/bcm47xx/prom.c
+@@ -135,7 +135,9 @@ void __init bcm47xx_prom_highmem_init(void)
+ {
+ 	unsigned long off = (unsigned long)prom_init;
+ 	unsigned long extmem = 0;
+-	bool highmem_region = false;
++	bool highmem_region = false;
++	extern unsigned long max_low_pfn;
++	unsigned long total_mem_pages;
+ 
+ 	if (WARN_ON(bcm47xx_bus_type != BCM47XX_BUS_TYPE_BCMA))
+ 		return;
+@@ -167,9 +169,24 @@ void __init bcm47xx_prom_highmem_init(void)
+ 	early_tlb_init();
+ 
+-	if (!extmem)
+-		return;
+-
+-	pr_warn("Found %lu MiB of extra memory, but highmem is unsupported yet!\n",
+-		extmem >> 20);
+-
+-	/* TODO: Register extra memory */
++	if (!extmem) {
++		pr_debug("No extra memory found\n");
++		return;
++	}
++	/* setup_permanent_tlb_mapping(); */
++	/*
++	 * Corrrect max_low_pfn,
++	 * For memory set as Normal.
++	 */
++	total_mem_pages = PFN_UP(__pa(HIGHMEM_START) + extmem);
++	if (total_mem_pages < max_low_pfn) {
++		max_low_pfn = total_mem_pages;
++		pr_info(" * * * Adjusted max_low_pfn to %lu\n", max_low_pfn);
++	}
++
++	/*
++	 * Setup border before registered memory.
++	 * BCM4706: Second 128MB memory bank is physically located at HIGHMEM_START.
++	 */
++	memblock_add(HIGHMEM_START, extmem);
++	/* memblock_free(HIGHMEM_START, extmem); - may be not work */
++	pr_info(" * * * Registered %lu MiB of fucking extra memory at HIGHMEM_START\n", extmem >> 20);
+ }
