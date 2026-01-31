@@ -37,7 +37,7 @@ index 000000000000..3c661b5e50e1
 + * The second 128 MiB bank starts at physical 0x87ffffff and requires HIGHMEM.
 + */
 +#define PHYS_OFFSET		_AC(0x00000000, UL)
-+#define HIGHMEM_START		_AC(0x08000000, UL)
++#define HIGHMEM_START		_AC(0x88000000, UL)
 +
 +/*
 + * Include generic definitions for other constants (CAC_BASE, PAGE_OFFSET, etc.)
