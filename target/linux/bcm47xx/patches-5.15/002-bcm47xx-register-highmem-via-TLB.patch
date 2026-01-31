@@ -1,0 +1,16 @@
+--- a/arch/mips/bcm47xx/prom.c
++++ b/arch/mips/bcm47xx/prom.c
+@@ -153,9 +153,10 @@ void __init bcm47xx_prom_highmem_init(void)
+ 	 *      0x80000000      0xc0000000      (1st: 256MB)
+ 	 *      0x90000000      0xd0000000      (2nd: 256MB)
+ 	 */
+-	add_temporary_entry(ENTRYLO(0x80000000),
+-			    ENTRYLO(0x80000000 + (256 << 20)),
+-			    EXTVBASE, PM_256M);
++	/* add_temporary_entry(ENTRYLO(0x80000000), 		*/
++	/*		    ENTRYLO(0x80000000 + (256 << 20)), 	*/
++
++	/*		    EXTVBASE, PM_256M); 		*/
+ 
+ 	off = EXTVBASE + __pa(off);
+ 	for (extmem = 128 << 20; extmem < 512 << 20; extmem <<= 1) {
