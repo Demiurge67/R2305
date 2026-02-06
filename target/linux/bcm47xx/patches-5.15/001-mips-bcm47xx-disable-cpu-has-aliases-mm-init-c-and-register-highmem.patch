@@ -1,0 +1,63 @@
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -412,10 +412,15 @@ void __init paging_init(void)
+ #ifdef CONFIG_HIGHMEM
+ 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
+ 
++#ifdef CONFIG_BCM47XX
++	/* BCM4706: Allow highmem despite dcache aliases
++	* Hardware handles coherency correctly */
++#else
+ 	if (cpu_has_dc_aliases && max_low_pfn != highend_pfn) {
+ 		printk(KERN_WARNING "This processor doesn't support highmem."
+ 		       " %ldk highmem ignored\n",
+		       (highend_pfn - max_low_pfn) << (PAGE_SHIFT - 10));
+ 		max_zone_pfns[ZONE_HIGHMEM] = max_low_pfn;
+ 	}
++#endif
+ 
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -436,8 +436,12 @@ static inline void __init mem_free_
+ #ifdef CONFIG_HIGHMEM
+ 	unsigned long tmp;
+ 
+-	if (cpu_has_dc_aliases)
+-		return;
++#ifdef CONFIG_BCM47XX
++  /* BCM4706: Allow highmem freeing despite dcache aliases */
++#else
++	if (cpu_has_dc_aliases)
++		return;
++#endif
+ 
+ 	for (tmp = highstart_pfn; tmp < highend_pfn; tmp++) {
+ 		struct page *page = pfn_to_page(tmp);
+--- a/arch/mips/bcm47xx/prom.c
++++ b/arch/mips/bcm47xx/prom.c
+@@ -166,13 +166,18 @@ void __init bcm47xx_prom_highmem_init(void)
+ 
+ 	early_tlb_init();
+ 
+-	if (!extmem)
+-		return;
+-
+-	pr_warn("Found %lu MiB of extra memory, but highmem is unsupported yet!\n",
+-		extmem >> 20);
+-
+-	/* TODO: Register extra memory */
++	if (!extmem) {
++		pr_debug("bcm47xx: No highmem found\n");
++		return;
++	}
++
++	pr_info("bcm47xx: Registering %lu MB highmem\n", extmem >> 20);
++
++	/* Register at physical 0x80000000 + 128MB - PAGE_SIZE */
++	memblock_add(0x87fff000, extmem + PAGE_SIZE);
++
++	pr_info("bcm47xx: Total: %lu MB (%lu lowmem + %lu highmem)\n",
++	(lowmem + extmem) >> 20, lowmem >> 20, extmem >> 20);
+ }
+ 
+ #endif /* defined(CONFIG_BCM47XX_BCMA) && defined(CONFIG_HIGHMEM) */
