@@ -1,0 +1,23 @@
+--- a/drivers/net/wireless/broadcom/b43/main.c
++++ b/drivers/net/wireless/broadcom/b43/main.c
+@@ -5370,6 +5370,6 @@ static int b43_wireless_core_attach(struct b43_wldev *dev)
+ 	int err;
+ 	u32 tmp;
+-	bool have_2ghz_phy = false, have_5ghz_phy = false;
++	bool have_2ghz_phy = true, have_5ghz_phy = true;
+ 
+ 	/* Do NOT do any device initialization here.
+ 	 * Do it in wireless_core_init() instead.
+ 	 * This function is for gathering basic information about the HW, only.
+--- a/drivers/net/wireless/broadcom/b43/main.c
++++ b/drivers/net/wireless/broadcom/b43/main.c
+@@ -5423,6 +5423,6 @@ static int b43_wireless_core_attach(struct b43_wldev *dev)
+ 		switch (dev->phy.type) {
+ 		case B43_PHYTYPE_G:
+ 		case B43_PHYTYPE_LP:
+-		case B43_PHYTYPE_HT:
+-			b43warn(wl, "5 GHz band is unsupported on this PHY\n");
++		//case B43_PHYTYPE_HT: "DELETE B43_PHYTYPE_HT from game //
++ 		b43warn(wl, "****5 GHz band is unsupported on this PHY **** BUT 4331 PHYTYPE HT STILL SUPPORT\n");
+ 			have_5ghz_phy = false;
+ 			
