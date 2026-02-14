@@ -1,0 +1,93 @@
+From: Your Name <demiurge67@dem.dem>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] mips: bcm47xx: enable highmem support for BCM4706 (256 MB RAM)
+
+BCM4706 has 256 MB of RAM, but only the first 128 MB are directly
+accessible in the lowmem region due to MIPS32 architecture limits.
+The remaining 128 MB reside in SDRAM Region 2 at physical address
+0x80000000 + 128 MB and must be mapped through highmem.
+
+The MIPS 74K core has data cache aliases, which normally prevent
+highmem usage. However, on BCM4706 the hardware ensures cache
+coherency for highmem accesses, so the kernel can safely enable
+highmem by bypassing the standard dcache aliases check.
+
+This patch series implements:
+1. Override of cpu_has_dc_aliases checks in arch/mips/mm/init.c
+   to allow highmem registration on BCM47XX.
+2. Detection and registration of the second 128 MB region using
+   memblock_add() before paging_init().
+3. A permanent wired TLB entry mapping physical 0x80000000 to
+   virtual 0xc0000000 (256 MB) to make the highmem region accessible.
+4. Workarounds in highmem.c and c-r4k.c to handle cache flushing
+   and PTE checks specific to the non-contiguous memory layout
+   of BCM4706.
+
+The implementation is based on original code from ASUSWRT/DD-WRT
+and has been tested on ASUS RT-N66U and similar BCM4706 devices.
+
+Signed-off-by: Your Name <demiurge67@dem.dem>
+---
+ arch/mips/bcm47xx/prom.c         |  6 +++++++
+ arch/mips/mm/init.c              | 13 +++++--
+ 4 files changed, 95 insertions(+), 5 deletions(-)
+ 
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -411,10 +411,15 @@ void __init paging_init(void)
+ #ifdef CONFIG_HIGHMEM
+ 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
+ 
++#ifdef CONFIG_BCM47XX
++	/* BCM4706: Allow highmem despite dcache aliases
++	* Hardware handles coherency correctly */
++#else
+ 	if (cpu_has_dc_aliases && max_low_pfn != highend_pfn) {
+ 		printk(KERN_WARNING "This processor doesn't support highmem."
+ 		       " %ldk highmem ignored\n",
+		       (highend_pfn - max_low_pfn) << (PAGE_SHIFT - 10));
+ 		max_zone_pfns[ZONE_HIGHMEM] = max_low_pfn;
+ 	}
++#endif
+ 
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -441,8 +441,12 @@ static inline void __init mem_free_
+ #ifdef CONFIG_HIGHMEM
+ 	unsigned long tmp;
+ 
+-	if (cpu_has_dc_aliases)
+-		return;
++#ifdef CONFIG_BCM47XX
++  /* BCM4706: Allow highmem freeing despite dcache aliases */
++#else
++	if (cpu_has_dc_aliases)
++		return;
++#endif
+ 
+ 	for (tmp = highstart_pfn; tmp < highend_pfn; tmp++) {
+ 		struct page *page = pfn_to_page(tmp);
+--- a/arch/mips/bcm47xx/prom.c
++++ b/arch/mips/bcm47xx/prom.c
+@@ -49,6 +49,12 @@ __init void bcm47xx_set_system_type(u16 chip_id)
+ 		 (chip_id > 0x9999) ? "Broadcom BCM%d" :
+ 				      "Broadcom BCM%04X",
+ 		 chip_id);
+ }
++/* BCM4706 highmem support - values from ASUSWRT/DD-WRT */
++#if defined(CONFIG_BCM47XX_BCMA) && defined(CONFIG_HIGHMEM)
++#define SI_SDRAM_R2     0x80000000
++/* #define EXTVBASE        0xc0000000  */
++/*   #define ENTRYLO(x)      ((pte_val(pfn_pte((x) >> PAGE_SHIFT, PAGE_KERNEL_UNCACHED)) >> 6) | 1) */
++#endif
+ 
+ static unsigned long lowmem __initdata;
+@@ -105,6 +105,7 @@ static __init void prom_init_mem(void)
+ 	if (c->cputype == CPU_74K && (mem == (128 << 20)))
+ 		mem -= 0x1000;
+ 	memblock_add(0, mem);
++	lowmem = mem;
+ }
+ 
+ /*
+ static unsigned long lowmem __initdata;

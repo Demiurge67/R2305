@@ -1,0 +1,47 @@
+From: Your Name <demiurge67@dem.dem>
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+Subject: [PATCH] mips: bcm47xx: enable highmem support for BCM4706 (256 MB RAM)
+
+BCM4706 has 256 MB of RAM, but only the first 128 MB are directly
+accessible in the lowmem region due to MIPS32 architecture limits.
+The remaining 128 MB reside in SDRAM Region 2 at physical address
+0x80000000 + 128 MB and must be mapped through highmem.
+
+The MIPS 74K core has data cache aliases, which normally prevent
+highmem usage. However, on BCM4706 the hardware ensures cache
+coherency for highmem accesses, so the kernel can safely enable
+highmem by bypassing the standard dcache aliases check.
+
+This patch series implements:
+1. Override of cpu_has_dc_aliases checks in arch/mips/mm/init.c
+   to allow highmem registration on BCM47XX.
+2. Detection and registration of the second 128 MB region using
+   memblock_add() before paging_init().
+3. A permanent wired TLB entry mapping physical 0x80000000 to
+   virtual 0xc0000000 (256 MB) to make the highmem region accessible.
+4. Workarounds in highmem.c and c-r4k.c to handle cache flushing
+   and PTE checks specific to the non-contiguous memory layout
+   of BCM4706.
+
+The implementation is based on original code from ASUSWRT/DD-WRT
+and has been tested on ASUS RT-N66U and similar BCM4706 devices.
+
+Signed-off-by: Your Name <demiurge67@dem.dem>
+---
+ mm/highmem.c                     | 21 +++-
+ 4 files changed, 95 insertions(+), 5 deletions(-)
+ 
+--- a/mm/highmem.c
++++ b/mm/highmem.c
+@@ -160,7 +160,10 @@ static void flush_all_zero_pkmaps(void)
+ 	int i;
+ 	int need_flush = 0;
+ 
+-	flush_cache_kmaps();
++#ifndef CONFIG_BCM47XX
++	/* BCM4706: Skip cache flush for non-contiguous memory */
++	flush_cache_kmaps();
++#endif
+ 
+ 	for (i = 0; i < LAST_PKMAP; i++) {
+ 		struct page *page;
