@@ -86,7 +86,7 @@ Signed-off-by: Your Name <demiurge67@dem.dem>
 +	/*  but wired Maps: Physical 0x80000000 -> Virtual 0xc0000000 (256MB) */
 +	add_wired_tlb_entry(ENTRYLO(SI_SDRAM_R2),
 +			ENTRYLO(SI_SDRAM_R2 + (256 << 20)),
-+	 		virt_base,
++	 		EXTVBASE,
 +			PM_256M);
 +
 +	pr_info("bcm47xx: Highmem registered:\n");
